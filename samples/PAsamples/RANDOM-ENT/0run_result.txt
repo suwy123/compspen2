@@ -1,0 +1,59 @@
+hls-split-3-1.smt: unsat  8.846713 
+rand_ent_2-0.smt: sat  0.071309 
+entl-12.smt: sat  0.774237 
+hls-split-2-1-n.smt: unsat  117.070740  timeout
+hls-split-2-3.smt: unsat  48.857765  timeout
+entl-13.smt: unsat  18.378260 
+entl-10.smt: sat  1.423962 
+hls-nosplit-2-2.smt: unsat  41.739963  timeout
+hls-split-1-1-n.smt: unsat  24.294275 
+hls-split-3-3.smt: unsat  39.950976  timeout
+hls-split-4-0.smt: unsat  13.182532 
+hls-split-2-1.smt: unsat  9.573226 
+entl-15.smt: unsat  0.075811 
+hls-split-4-1.smt: unsat  12.501127 
+rand_ent_2-1.smt: sat  3.203269 
+userdef-ent-3.smt: unsat  0.768984 
+entl-01.smt: unsat  1.690882 
+hls-split-1-2.smt: unsat  20.233149 
+entl-05.smt: sat  0.048097 
+entl-16.smt: unsat  0.076409 
+rand_ent_3-2.smt: sat  0.091862 
+hls-split-3-0.smt: unsat  7.694446 
+rand_ent_3-3.smt: sat  0.114396 
+entl-11.smt: sat  0.972932 
+entl-07.smt: unsat  1.525113 
+hls-nosplit-3-2.smt: unsat  313.639149  timeout
+hls-split-1-0-n.smt: unsat  7.296405 
+hls-split-4-3.smt: unsat  29.569788 
+entl-04.smt: sat  1.658491 
+entl-09.smt: sat  4.058545 
+hls-nosplit-2-1.smt: unsat  7.855485 
+userdef-ent-4.smt: sat  0.689964 
+hls-split-2-2.smt: unsat  21.214343 
+hls-split-2-0.smt: unsat  4.418203 
+entl-06.smt: sat  0.044464 
+hls-nosplit-1-3.smt: unsat  31.003852  timeout
+entl-03.smt: unsat  1.864792 
+entl-14.smt: unsat  0.536837 
+rand_ent_2-2.smt: sat  4.565141 
+hls-split-1-3.smt: unsat  48.394656  timeout
+hls-nosplit-3-0.smt: unsat  1.368273 
+userdef-ent-2.smt: sat  5.048648 
+rand_ent_1-0.smt: sat  0.054248 
+hls-nosplit-1-0.smt: unsat  0.405549 
+hls-split-4-2.smt: unsat  13.888140 
+hls-nosplit-3-1.smt: unsat  28.301641 
+rand_ent_3-1.smt: sat  0.075009 
+hls-split-1-1.smt: unsat  8.813742 
+hls-nosplit-2-0.smt: unsat  0.638383 
+userdef-ent-1.smt: unsat  0.790356 
+entl-08.smt: unsat  1.359315 
+rand_ent_1-1.smt: sat  0.054903 
+userdef-ent-5.smt: unsat  3.883968 
+hls-nosplit-1-1.smt: unsat  4.542949 
+hls-split-2-0-n.smt: unsat  26.568931 
+hls-split-3-2.smt: unsat  17.977580 
+hls-nosplit-1-2.smt: unsat  13.622720 
+hls-split-1-0.smt: unsat  3.851755 
+entl-02.smt: unsat  5.538734 
