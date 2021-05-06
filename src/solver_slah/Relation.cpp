@@ -17,14 +17,14 @@ void Relation::init(z3::expr_vector adds,z3::expr cons){
 		
 		for(int i = 0; i < adds.size(); i++){
 			add_table.insert(std::pair<std::string,int>(adds[i].to_string(),i));
-			for(int j = 0; j < i; j++){
+			for(int j = i-1; j >= 0; j--){
 				if(rel_table[i][j] == 0){
 					sol.reset();
     				sol.add(cons && (!(adds[i] == adds[j])));
     				if(sol.check() == z3::unsat){
     					rel_table[i][j] = 1;
     					rel_table[j][i] = 1;
-    					//tran(i,j,1);
+    					tran(i,j,1);
     					continue;
 					}
 					sol.reset();
@@ -32,7 +32,7 @@ void Relation::init(z3::expr_vector adds,z3::expr cons){
     				if(sol.check() == z3::unsat){
     					rel_table[i][j] = 2;
     					rel_table[j][i] = 4;
-    					//tran(i,j,2);
+    					tran(i,j,2);
     					continue;
 					}
 					sol.reset();
@@ -40,7 +40,7 @@ void Relation::init(z3::expr_vector adds,z3::expr cons){
     				if(sol.check() == z3::unsat){
     					rel_table[i][j] = 4;
     					rel_table[j][i] = 2;
-    					//tran(i,j,4);
+    					tran(i,j,4);
     					continue;
 					}
 					sol.reset();
@@ -48,7 +48,7 @@ void Relation::init(z3::expr_vector adds,z3::expr cons){
     				if(sol.check() == z3::unsat){
     					rel_table[i][j] = 3;
     					rel_table[j][i] = 5;
-    					//tran(i,j,3);
+    					tran(i,j,3);
     					continue;
 					}
 					sol.reset();
@@ -56,7 +56,7 @@ void Relation::init(z3::expr_vector adds,z3::expr cons){
     				if(sol.check() == z3::unsat){
     					rel_table[i][j] = 5;
     					rel_table[j][i] = 3;
-    					//tran(i,j,5);
+    					tran(i,j,5);
     					continue;
 					}	
 				}
