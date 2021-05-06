@@ -915,6 +915,7 @@ bool PASolver::match_atom(z3::expr absC, z3::expr spaceC, z3::expr dataD, z3::ex
 z3::expr PASolver::getEUB(z3::expr c1, z3::expr d1){
 	z3::expr con=z3_ctx.bool_val(true);
 	Predicate_SLAH *d1_pdef = dynamic_cast<Predicate_SLAH*>(m_problem->getPredicate()); 
+	HeapChunk* hckdef = m_problem->getHeapChunk();
 	int zsize=d1_pdef->get_z_size();
 	for(int i=1;i<=zsize;i++){
 		con = con && (c1.arg(i)==d1.arg(i)) && (c1.arg(zsize+1+i)==d1.arg(zsize+1+i));
