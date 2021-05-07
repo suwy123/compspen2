@@ -1714,7 +1714,7 @@ std::cout<<std::endl;
 									return z3::sat;
 								} 
 								//check_sorted_entl 
-								z3::expr dataA_sorted = dataA && sort_tmp_pf_new1;
+								z3::expr dataA_sorted = absA && sort_tmp_pf_new1;
 								z3::expr spaceA_sorted = spaceA;
 								z3::expr spaceB_sorted = spaceB;
 								//sort atoms according to the sort
@@ -1774,7 +1774,7 @@ std::cout<<std::endl;
 								return z3::sat;
 							}
 							//check_sorted_entl 
-							z3::expr dataA_sorted = dataA && sort_tmp_pf_new2;
+							z3::expr dataA_sorted = absA && sort_tmp_pf_new2;
 							z3::expr spaceA_sorted = spaceA;
 							z3::expr spaceB_sorted = spaceB;
 							//sort atoms according to the sort
