@@ -746,7 +746,9 @@ void PASolver::pre_match(z3::expr absA, z3::expr &spaceA, z3::expr dataB, z3::ex
 		z3::expr atomB = spaceB.arg(i);
 		z3::expr beg=head(atomB);
 		z3::expr_vector tmpargs(z3_ctx);
+		int startA=-1;
 		for(int j=0;j<spaceA.num_args();j++){
+			if(beg.to_string() == head(atomB).to_string()) startA++;
 			z3::expr atomA = spaceA.arg(j);
 			if(rel.get_relation(beg,head(atomA))==1){//beg == head(atomA)
 				tmpargs.push_back(atomA);
@@ -776,6 +778,11 @@ std::cout<<"prematch is true:----------\n";
 				}else if(rel.get_relation(tail(atomB),tail(atomA))==4 || rel.get_relation(tail(atomB),tail(atomA))==5){//tail(atomB)>tail(atomA) or tail(atomB)>=tail(atomA)
 					beg=tail(atomA);
 					j=-1;
+				}else{//a_startA*... can't match atomB
+					z3::expr_vector empargs(z3_ctx);
+					tmpargs = empargs;
+					beg = head(atomB);
+					j = startA;
 				}
 			}	
 		}
