@@ -17,7 +17,6 @@ class PASolver{
 private:
 	Problem* m_problem;
 	z3::solver z3_sol;
-	int emp_index;
 	int k_index;
 	int z_newvar_index;//match_P中引入新变量需要 
 	int w_newvar_index;//match_P中引入新变量需要 
@@ -56,12 +55,12 @@ public:
     //bool isP(z3::expr atom,predicate &Pdef);
     bool isP(z3::expr atom);
     
-    z3::expr get_abstraction(z3::expr& data, z3::expr& space, z3::expr_vector& new_bools);
-    z3::expr abs_space(z3::expr &space, z3::expr_vector& new_bools);
-    z3::expr pred2abs(z3::expr &atom, int i, z3::expr_vector& new_bools);
+    z3::expr get_abstraction(z3::expr& data, z3::expr& space);
+    z3::expr abs_space(z3::expr &space);
+    z3::expr pred2abs(z3::expr &atom);
     void par2arg(z3::expr &exp,z3::expr_vector pars,z3::expr_vector args);
     void par2arg(z3::expr &exp,z3::expr_vector pars,z3::expr_vector args,z3::expr_vector exargs);
-    z3::expr abs_phi_star(z3::expr &space, z3::expr_vector& new_bools);
+    z3::expr abs_phi_star(z3::expr &space);
     
     void change_hck(z3::expr &data,z3::expr &space);
     void change_hck(z3::expr &data,z3::expr &space,z3::expr_vector &ex_var_set);

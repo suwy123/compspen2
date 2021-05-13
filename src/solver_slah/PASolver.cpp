@@ -7,7 +7,7 @@
 extern z3::context z3_ctx;
 
 PASolver::PASolver() 
-: m_problem(nullptr), z3_sol(z3_ctx), emp_index(0), k_index(0), z_newvar_index(0), w_newvar_index(0), ex_newvar_index(0){}
+: m_problem(nullptr), z3_sol(z3_ctx), k_index(0), z_newvar_index(0), w_newvar_index(0), ex_newvar_index(0){}
 
 void PASolver::solve() {
 	check_preds();
@@ -112,12 +112,12 @@ void PASolver::check_preds() {
 z3::check_result PASolver::check_sat() {
     z3::expr formula = m_problem->getPhi();
     
-    z3::expr_vector f_new_bools(z3_ctx);
+    //z3::expr_vector f_new_bools(z3_ctx);
     z3::expr space(z3_ctx);
     z3::expr data(z3_ctx); 
     get_data_space(formula, data, space);//add nil = 0 in data
    
-    z3::expr f_abs = get_abstraction(data, space, f_new_bools);
+    z3::expr f_abs = get_abstraction(data, space);
     
     z3_sol.reset();
     z3_sol.add(f_abs);
@@ -170,26 +170,23 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 //std::cout<<"dataB: "<<dataB<<std::endl;
 //std::cout<<"spaceB: "<<spaceB<<std::endl;
     
-    z3::expr_vector new_boolsA(z3_ctx);
-    z3::expr absA = get_abstraction(dataA, spaceA, new_boolsA);
+    z3::expr absA = get_abstraction(dataA, spaceA);
     z3_sol.reset();
     z3_sol.add(absA);
     if(z3_sol.check() == z3::unsat) {
-    	std::cout<<"abs(A) is unsat"<<std::endl;
+    	//std::cout<<"abs(A) is unsat"<<std::endl;
     	return z3::unsat;//entl is true when absA is unsat
     }
     
-    z3::expr_vector new_boolsB(z3_ctx);
-    z3::expr absB = get_abstraction(dataB, spaceB, new_boolsB);
+    z3::expr absB = get_abstraction(dataB, spaceB);
     z3_sol.reset();
-    ex_var_set=merge(new_boolsB,ex_var_set);
     if(ex_var_set.size()!=0){
     	z3_sol.add(absA && (!exists(ex_var_set, absB)));
 	}else{
 		z3_sol.add(absA && (!absB));
 	}
 	if(z3_sol.check() == z3::sat){
-    	std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
+    	//std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
 		return z3::sat;//entl is false when Abs(A) \vDash Abs(B) is false
 	}
 	
@@ -213,14 +210,14 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 //	}
 	
 	if(m_problem->getHeapChunk()!=nullptr){
-std::cout<<"------changehck--------------"<<std::endl;
+//std::cout<<"------changehck--------------"<<std::endl;
 		change_hck(dataA,spaceA);
-std::cout<<"dataA: "<<dataA<<std::endl;
-std::cout<<"spaceA: "<<spaceA<<std::endl; 
+//std::cout<<"dataA: "<<dataA<<std::endl;
+//std::cout<<"spaceA: "<<spaceA<<std::endl; 
 		change_hck(dataB,spaceB,ex_var_set);
-std::cout<<"dataB: "<<dataB<<std::endl;
-std::cout<<"spaceB: "<<spaceB<<std::endl;
-std::cout<<"ex_var_set: " <<ex_var_set<<std::endl;
+//std::cout<<"dataB: "<<dataB<<std::endl;
+//std::cout<<"spaceB: "<<spaceB<<std::endl;
+//std::cout<<"ex_var_set: " <<ex_var_set<<std::endl;
 	}
 
 	z3::expr_vector headsA = get_space_heads(spaceA);
@@ -446,30 +443,28 @@ z3::expr PASolver::newblk(z3::expr source, z3::expr dest){
  * @param new_bools : aux output new bool vars
  * @return
  */
-z3::expr PASolver::get_abstraction(z3::expr& data, z3::expr& space, z3::expr_vector& new_bools) {
-	emp_index++;//每次get_abstraction时emp_index会增1，保证取名不会重复，而且要保证phi_star里面也能得到一样的这个变量
-
+z3::expr PASolver::get_abstraction(z3::expr& data, z3::expr& space) {
     z3::expr abs = data;
     
     if(Z3_ast(space) == 0) return abs;
 
     // 1.3 space part
-    abs = abs && abs_space(space, new_bools);
+    abs = abs && abs_space(space);
 
     // 1.4 sep (\phi_star)
-    abs = abs && abs_phi_star(space, new_bools);
+    abs = abs && abs_phi_star(space);
 
     return abs;
 }
 
-z3::expr PASolver::abs_space(z3::expr &space, z3::expr_vector& new_bools) {
+z3::expr PASolver::abs_space(z3::expr &space) {
     // 1.space atoms -> abs (\phi_sigma)
     z3::expr f_abs(z3_ctx);
     z3::expr b_false = z3_ctx.bool_val(false);
     for (int i=0; i<space.num_args(); i++) {
         //1.1 fetch atom
         z3::expr atom = space.arg(i);
-        z3::expr atom_f = pred2abs(atom, i, new_bools);
+        z3::expr atom_f = pred2abs(atom);
         if (atom_f.hash() == b_false.hash()) return b_false;
 
         // 1.5 add atom_f to f_abs
@@ -522,7 +517,7 @@ bool PASolver::isP(z3::expr atom){
  * @param new_bools [new bool vars]
  * @return      [the abstraction]
  */
-z3::expr PASolver::pred2abs(z3::expr &atom, int i, z3::expr_vector& new_bools) {//solver中定义的纯虚函数 
+z3::expr PASolver::pred2abs(z3::expr &atom) {//solver中定义的纯虚函数 
 	
     //if (atom.to_string() == "emp") return z3_ctx.bool_val(true);//emp在CommandParser::_parseExpr()中被处理了 
     
@@ -531,13 +526,13 @@ z3::expr PASolver::pred2abs(z3::expr &atom, int i, z3::expr_vector& new_bools) {
 		args.push_back(atom.arg(j));	
 	}
 	
+	z3::expr source = head(atom);
+	z3::expr dest = tail(atom);
+	
     z3::expr abs(z3_ctx);
     if (expr_tool::is_fun(atom, "pto")) {
-    	z3::expr source = atom.arg(0); 
         abs = source > 0;
     }else if(expr_tool::is_fun(atom, "blk")){
-    	z3::expr source = atom.arg(0); 
-		z3::expr dest = atom.arg(1);
     	abs = (source > 0) && (source < dest);
 	}else{
 		if(ishck(atom)){
@@ -546,15 +541,9 @@ z3::expr PASolver::pred2abs(z3::expr &atom, int i, z3::expr_vector& new_bools) {
 			z3::expr data = hckdef->get_data();
 			pi_remove_ex(data);
 			par2arg(data,hckdef->get_pars(),args);
-			z3::expr source = atom.arg(0); 
-			z3::expr dest = atom.arg(1+hckdef->get_z_size());
 			int minsize=hckdef->get_space().size();
 			abs = (source > 0) && ((dest - source) >= minsize) && data;
 		}else{//P
-    		std::string new_name = "[emp"+to_string(emp_index)+","+to_string(i)+"]";//每次get_abstraction时emp_index会增1，保证取名不会重复，而且要保证phi_star里面也能得到一样的这个变量 
-    		z3::expr emp_bool = z3_ctx.bool_const(new_name.c_str()); //empi
-    		new_bools.push_back(emp_bool);
-    		
     		Predicate_SLAH *pdef = dynamic_cast<Predicate_SLAH*>(m_problem->getPredicate()); 
     		//isP(atom,pdef);
     		int zsize=pdef->get_z_size();
@@ -567,8 +556,8 @@ z3::expr PASolver::pred2abs(z3::expr &atom, int i, z3::expr_vector& new_bools) {
 			//int h_i=hck_index(pdef.get_rec_rule_hls(0).get_hck());
 			m_problem->getHeapChunk()->get_summ(summ,k_index,args);
     		
-            z3::expr or_0 = (!emp_bool && summ && (atom.arg(0) > 0));
-            z3::expr or_1 = (emp_bool && emp_abs && (atom.arg(0) > 0));
+            z3::expr or_0 = ((source < dest) && summ && (atom.arg(0) > 0));
+            z3::expr or_1 = ((source == dest) && emp_abs && (atom.arg(0) > 0));
             abs = or_0 || or_1;
 		}
 	}
@@ -619,7 +608,7 @@ void PASolver::par2arg(z3::expr &exp,z3::expr_vector pars,z3::expr_vector args,z
 }
 
 
-z3::expr PASolver::abs_phi_star(z3::expr &space, z3::expr_vector& new_bools) {
+z3::expr PASolver::abs_phi_star(z3::expr &space) {
 	z3::expr phi_star = z3_ctx.bool_val(true);
     z3::expr b_false = z3_ctx.bool_val(false);
     
@@ -628,26 +617,19 @@ z3::expr PASolver::abs_phi_star(z3::expr &space, z3::expr_vector& new_bools) {
     		z3::expr atom1 = space.arg(i);
     		z3::expr atom2 = space.arg(j);
     		
-    		//if(atom1.to_string()!="emp" && atom2.to_string()!="emp" ){
-        		std::string name1 = "[emp"+to_string(emp_index)+","+to_string(i)+"]";
-        		z3::expr emp_bool1 = z3_ctx.bool_const(name1.c_str());
-        		std::string name2 = "[emp"+to_string(emp_index)+","+to_string(j)+"]";
-        		z3::expr emp_bool2 =z3_ctx.bool_const(name2.c_str());
-        	
-        		z3::expr phi(z3_ctx);
-        		
-    			if (isP(atom1) && isP(atom2)){
-    				phi = emp_bool1 || emp_bool2 || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
-				}else if(isP(atom1) && !isP(atom2)){
-					phi = emp_bool1 || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
-				}else if(!isP(atom1)&& isP(atom2)){
-					phi = emp_bool2 || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
-				}else{
-					phi = tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
-				}
-				phi_star = phi_star && phi;
-			//}
     		
+    		z3::expr phi(z3_ctx);
+    		
+			if (isP(atom1) && isP(atom2)){
+				phi = head(atom1)==tail(atom1) || head(atom2)==tail(atom2) || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
+			}else if(isP(atom1) && !isP(atom2)){
+				phi = head(atom1)==tail(atom1) || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
+			}else if(!isP(atom1)&& isP(atom2)){
+				phi = head(atom2)==tail(atom2) || tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
+			}else{
+				phi = tail(atom2)<=head(atom1) || tail(atom1)<=head(atom2);
+			}
+			phi_star = phi_star && phi;
     		
 		}
     }
@@ -753,20 +735,20 @@ void PASolver::pre_match(z3::expr absA, z3::expr &spaceA, z3::expr dataB, z3::ex
 			if(rel.get_relation(beg,head(atomA))==1){//beg == head(atomA)
 				tmpargs.push_back(atomA);
 				if(rel.get_relation(tail(atomB),tail(atomA))==1){//tail(atomB) == tail(atomA)
-std::cout<<"prematch :----------\n";
+//std::cout<<"prematch :----------\n";
 //tmpargs matches atomB 
-for(int k=0;k<spaceA.num_args();k++){
-	if(find_index(tmpargs,spaceA.arg(k))!=-1){
-std::cout<<spaceA.arg(k)<<"*";
-	}
-}
-std::cout<<std::endl;
-std::cout<<atomB<<std::endl;
+//for(int k=0;k<spaceA.num_args();k++){
+//	if(find_index(tmpargs,spaceA.arg(k))!=-1){
+//std::cout<<spaceA.arg(k)<<"*";
+//	}
+//}
+//std::cout<<std::endl;
+//std::cout<<atomB<<std::endl;
 					if(atomB.decl().name().str() != "blk" && !match_atom(absA, new_sep(tmpargs), dataB, atomB, ex_var_set, pi_ex_set)){
-std::cout<<"prematch is false:----------\n";
+//std::cout<<"prematch is false:----------\n";
 						throw -1;
 					}
-std::cout<<"prematch is true:----------\n";
+//std::cout<<"prematch is true:----------\n";
 					//tmpargs matches atomB 
 					for(int k=0;k<spaceA.num_args();k++){
 						if(find_index(tmpargs,spaceA.arg(k))!=-1){
@@ -970,10 +952,10 @@ z3::expr PASolver::getEUB(z3::expr c1, z3::expr d1){
 }
 
 bool PASolver::match_P(z3::expr absC, z3::expr spaceC, z3::expr dataD, z3::expr d1, z3::expr_vector ex_var_set){
-std::cout<<"-----------------match_P--------------------"<<std::endl;
+//std::cout<<"-----------------match_P--------------------"<<std::endl;
 //std::cout<<"absC: "<<absC<<std::endl;
-std::cout<<"spaceC: "<<spaceC<<std::endl;
-std::cout<<"d1: "<<d1<<std::endl;
+//std::cout<<"spaceC: "<<spaceC<<std::endl;
+//std::cout<<"d1: "<<d1<<std::endl;
 	Predicate_SLAH *d1_pdef = dynamic_cast<Predicate_SLAH*>(m_problem->getPredicate()); 
 	int zsize=d1_pdef->get_z_size();
 	int vsize=d1_pdef->get_v_size();
@@ -988,7 +970,7 @@ std::cout<<"d1: "<<d1<<std::endl;
 	z3_sol.reset();
 	z3_sol.add(absC && (!con));
 	if(spaceC.num_args()==0 && z3_sol.check() == z3::unsat){
-std::cout<<"-------match_P is true: left:emp right:P(x,x)---------"<<std::endl;
+//std::cout<<"-------match_P is true: left:emp right:P(x,x)---------"<<std::endl;
 		 return true;//m===0 and x=y and \vec{z} = \vec{u}
 	}
 	else if(spaceC.num_args()>=1){//m>=1
@@ -1003,18 +985,26 @@ std::cout<<"-------match_P is true: left:emp right:P(x,x)---------"<<std::endl;
 		if(z3_sol.check()==z3::unsat){//m>=1 and head(spaceC)==head(d1) and consecutive
 			z3::expr c1 = spaceC.arg(0);
 			if(c1.decl().name().str()=="blk"){
-std::cout<<"-------match_P is false: left:blk*... ---------"<<std::endl;
+//std::cout<<"-------match_P is false: left:blk*... ---------"<<std::endl;
 				return false;//m>=1 and consecutive and c1 is blk
 			}else if(isP(c1)){//m>=1 and consecutive and c1 is P
 				Predicate_SLAH *c1_pdef = dynamic_cast<Predicate_SLAH*>(m_problem->getPredicate()); 
 				if(spaceC.num_args()==1){//m==1 and consecutive and c1 is P
 					con=getEUB(c1,d1);
+//std::cout<<absC<<std::endl;
+//std::cout<<con<<std::endl;
 					z3_sol.reset();
 					z3_sol.add(absC && (!con));
 					if(z3_sol.check()==z3::unsat){
-std::cout<<"-------match_P is true: left:P(x,y) right:P(x,y)---------"<<std::endl;
+//std::cout<<"-------match_P is true: left:P(x,y) right:P(x,y)---------"<<std::endl;
 						return true;
 					}
+//z3::model m = z3_sol.get_model();
+//for (int i=0; i<m.num_consts(); i++) {
+//    z3::func_decl x = m.get_const_decl(i);
+//    z3::expr x_interp = m.get_const_interp(x);
+//    cout  <<x.name() << ":" << x_interp<<endl;
+//}
 				}else{//m>1 and consecutive and c1 is P -> divide d1
 					z3::expr_vector atomset1(z3_ctx);
 					atomset1.push_back(c1);
@@ -1044,7 +1034,7 @@ std::cout<<"-------match_P is true: left:P(x,y) right:P(x,y)---------"<<std::end
 						args_div2.push_back(d1.arg(i));
 					}
 					z3::expr d1_div2=p_fun(args_div2);
-std::cout<<"-----left:P*...,divide d1 to two match_P problems-----"<<std::endl;
+//std::cout<<"-----left:P*...,divide d1 to two match_P problems-----"<<std::endl;
 					return match_P(absC,new_sep(atomset1),dataD,d1_div1,ex_var_set) && match_P(absC,new_sep(atomset2),dataD,d1_div2,ex_var_set);
 				}
 			}else if(c1.decl().name().str()=="pto"){//m>=1 and consecutive and c1 is pto
@@ -1090,7 +1080,7 @@ std::cout<<"-----left:P*...,divide d1 to two match_P problems-----"<<std::endl;
 							}
 							
 							if(zsize==0){//P(x;y;\vec{v}) hck(x,y,\vec{v})
-std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part1-----"<<std::endl;
+//std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part1-----"<<std::endl;
 								z3::expr sub1_dataA=con;//absC && ((x1+t1) == tail(ci))
 								z3::expr_vector sub1_args(z3_ctx);
 								sub1_args.push_back(d1.arg(0));//x
@@ -1132,7 +1122,7 @@ std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part1-----"<<std::endl;
 //std::cout<<"part2spaceA: "<<new_sep(sub2_atomsetA)<<std::endl;
 //std::cout<<"part2dataB: "<<sub2_dataB<<std::endl;
 //std::cout<<"part2atomB: "<<sub2_atomB<<std::endl;
-std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part2-----"<<std::endl;
+//std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part2-----"<<std::endl;
 									if(!match_P(sub2_dataA,new_sep(sub2_atomsetA),sub2_dataB,sub2_atomB,ex_var_set)) return false;
 								}
 							}else{//P(x,\vec{z};y,\vec{u};\vec{v}) hck(x,\vec{z},w,y,\vec{u},\vec{v}) or hck(x,\vec{z};y,\vec{u};\vec{v})
@@ -1186,7 +1176,7 @@ std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part2-----"<<std::endl;
 										z3::expr pi_ex=z3_ctx.bool_val(true);
 										pi_ex_set.push_back(pi_ex);
 										z3::expr_vector new_ex_var_set=merge(ex_var_set,w_newvar_set);
-std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part1-----"<<std::endl;
+//std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part1-----"<<std::endl;
 										if(check_entl_get_relations(sub1_dataA,new_sep(sub1_atomsetA),sub1_dataB,new_sep(sub1_atomsetB),new_ex_var_set,pi_ex_set)==z3::sat) return false;						
 //std::cout<<"part2"<<std::endl;
 										
@@ -1212,7 +1202,7 @@ std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part1---
 //std::cout<<"part2spaceA: "<<new_sep(sub2_atomsetA)<<std::endl;
 //std::cout<<"part2dataB: "<<sub2_dataB<<std::endl;
 //std::cout<<"part2atomB: "<<sub2_atomB<<std::endl;
-std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part2-----"<<std::endl;
+//std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part2-----"<<std::endl;
 											if(!match_P(sub2_dataA,new_sep(sub2_atomsetA),sub2_dataB,sub2_atomB,ex_var_set)) return false;
 										}
 										
@@ -1271,7 +1261,7 @@ std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" transition"<<j<<" part2---
 							
 							z3::expr case1_dataB = dataD;
 							z3::expr case1_atomB = d1;
-std::cout<<"----match_P c1 to inside of spaceC.arg"<<set2[i]<<" case1-----"<<std::endl;
+//std::cout<<"----match_P c1 to inside of spaceC.arg"<<set2[i]<<" case1-----"<<std::endl;
 							if(!match_P(case1_dataA,new_sep(case1_atomsetA),case1_dataB,case1_atomB,ex_var_set)) return false;
 							
 							
@@ -1362,18 +1352,18 @@ std::cout<<"----match_P c1 to inside of spaceC.arg"<<set2[i]<<" case1-----"<<std
 								
 								z3::expr case2_dataB = dataD;
 								z3::expr case2_atomB = d1;
-std::cout<<"----match_P c1 to inside of spaceC.arg"<<set2[i]<<" case2-----"<<std::endl;
+//std::cout<<"----match_P c1 to inside of spaceC.arg"<<set2[i]<<" case2-----"<<std::endl;
 								if(!match_P(case2_dataA,new_sep(case2_atomsetA),case2_dataB,case2_atomB,ex_var_set)) return false;
 							}
 						}
 					}
-std::cout<<"------match_P is true----------"<<std::endl;
+//std::cout<<"------match_P is true----------"<<std::endl;
 					return true;
 				}
 			}
 		}
 	}
-std::cout<<"------match_P is false----------"<<std::endl;
+//std::cout<<"------match_P is false----------"<<std::endl;
 	return false;
 }
 
@@ -1501,8 +1491,7 @@ std::cout<<"spaceA:"<<spaceA<<std::endl;
 std::cout<<"spaceB:"<<spaceB<<std::endl;
 //clock_t start, end;
 //start = clock();
-    z3::expr_vector new_boolsA(z3_ctx);
-    z3::expr absA = get_abstraction(dataA, spaceA, new_boolsA);
+    z3::expr absA = get_abstraction(dataA, spaceA);
    
     z3::expr_vector headsA = get_space_heads(spaceA);
     z3::expr_vector tailsA = get_space_tails(spaceA);
@@ -2041,9 +2030,8 @@ bool PASolver::check_sorted_entl(std::vector<z3::expr_vector> sort, z3::expr dat
 			atomset.push_back(div2);
 			for(int i = c_index+1;i<spaceC.num_args();i++) atomset.push_back(spaceC.arg(i));
 			
-			z3::expr_vector new_bools(z3_ctx);
 			z3::expr unfoldspaceC=new_sep(atomset);
-			z3::expr con=get_abstraction(dataC,unfoldspaceC,new_bools);
+			z3::expr con=get_abstraction(dataC,unfoldspaceC);
 			z3_sol.reset();
 			z3_sol.add(con);
 			if(z3_sol.check()==z3::sat){
@@ -2131,10 +2119,9 @@ bool PASolver::check_sorted_entl(std::vector<z3::expr_vector> sort, z3::expr dat
 					atomset.push_back(ck_div3);
 					for(int j = c_index+1;j<spaceC.num_args();j++) atomset.push_back(spaceC.arg(j));
 					
-					z3::expr_vector new_bools(z3_ctx);
 					z3::expr data=dataC && pi;
 					z3::expr unfoldspaceC=new_sep(atomset);
-					z3::expr con=get_abstraction(data,unfoldspaceC,new_bools);
+					z3::expr con=get_abstraction(data,unfoldspaceC);
 					z3_sol.reset();
 					z3_sol.add(con);
 					if(z3_sol.check()==z3::sat){
