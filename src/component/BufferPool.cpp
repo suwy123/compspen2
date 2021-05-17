@@ -16,7 +16,6 @@
 #include "CommandParserFactory.h"
 #include "Types.h"
 
-z3::context z3_ctx;
 TokenScannerFactory tokenScannerFactory;
 CommandParserFactory cmdParserFactory;
 TokenBuffer token_buffer;

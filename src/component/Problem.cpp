@@ -12,7 +12,7 @@
 #include "component/Z3Buffer.h"
 #include "Types.h"
 
-extern z3::context z3_ctx;
+z3::context z3_ctx;
 extern Z3Buffer z3_buffer;
 
 Problem::Problem():
