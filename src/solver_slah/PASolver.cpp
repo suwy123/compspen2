@@ -116,6 +116,7 @@ z3::check_result PASolver::check_sat() {
     z3::expr space(z3_ctx);
     z3::expr data(z3_ctx); 
     get_data_space(formula, data, space);//add nil = 0 in data
+    remove_emp(space);
    
     z3::expr f_abs = get_abstraction(data, space);
     
@@ -140,6 +141,7 @@ z3::check_result PASolver::check_entl() {//suppose no emp
     z3::expr spaceA(z3_ctx);
     z3::expr dataA(z3_ctx);
     get_data_space(formulaA, dataA, spaceA);
+    remove_emp(spaceA);
 //std::cout<<"--------------------"<<std::endl;
 //std::cout<<"dataA: "<<dataA<<std::endl;
 //std::cout<<"spaceA: "<<spaceA<<std::endl; 
@@ -166,6 +168,7 @@ z3::check_result PASolver::check_entl() {//suppose no emp
     z3::expr spaceB(z3_ctx);
     z3::expr dataB(z3_ctx);
     get_data_space(formulaB, dataB, spaceB);
+    remove_emp(spaceB);
 //std::cout<<"--------------------"<<std::endl;
 //std::cout<<"dataB: "<<dataB<<std::endl;
 //std::cout<<"spaceB: "<<spaceB<<std::endl;
@@ -273,19 +276,20 @@ void PASolver::get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space
     int data_num = num-1;
     
     Predicate_SLAH *pdef = dynamic_cast<Predicate_SLAH *>(m_problem->getPredicate()); 
-    if(num>0 && expr_tool::is_fun(formula.arg(num-1),"sep")){//space is (sep ...)
+    if(num>0 && is_fun(formula.arg(num-1),"sep")){//space is (sep ...)
     	space = formula.arg(num-1);
-	}else if(num>0 && (expr_tool::is_fun(formula.arg(num-1),"pto") ||//space is pto
-	                   expr_tool::is_fun(formula.arg(num-1),"blk") ||//space is blk
-	                   expr_tool::is_fun(formula.arg(num-1),m_problem->getHeapChunk()->get_name()) ||//space is hck
-					   expr_tool::is_fun(formula.arg(num-1),pdef->get_name()))){//space is hls
+	}else if(num>0 && (formula.arg(num-1).to_string()=="emp"||//space is emp
+					   is_fun(formula.arg(num-1),"pto") ||//space is pto
+	                   is_fun(formula.arg(num-1),"blk") ||//space is blk
+	                   is_fun(formula.arg(num-1),m_problem->getHeapChunk()->get_name()) ||//space is hck
+					   is_fun(formula.arg(num-1),pdef->get_name()))){//space is hls
 		z3::sort range = z3_ctx.bool_sort();
 	    z3::sort_vector domains(z3_ctx);
 	    domains.push_back(range);
 	    z3::func_decl sep_f = z3_ctx.function("sep", domains, range);//add ssep to it for consistency
 	    space = sep_f(formula.arg(num-1));
 	}else{//no space
-		data_num = num;
+			data_num = num;
 	}
 	
 	for (int i=0; i<data_num; i++) {
@@ -293,6 +297,22 @@ void PASolver::get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space
     } 
     
     data = mk_and(data_items);
+}
+
+void PASolver::remove_emp(z3::expr& space){
+	if(Z3_ast(space)==nullptr) return;
+	z3::expr newSpace(z3_ctx);
+	if(space.to_string() == "emp") space = newSpace;
+	if(space.is_app()&&is_fun(space,"sep")){
+		z3::expr_vector newSpace_args(z3_ctx);
+		for(int i=0;i<space.num_args();i++){
+			if(space.arg(i).to_string()!="emp"){
+				newSpace_args.push_back(space.arg(i));
+			}
+		}
+		if(newSpace_args.size()==0) space=newSpace;
+		else space = new_sep(newSpace_args);
+	}
 }
 
 z3::expr PASolver::head(z3::expr atom){
