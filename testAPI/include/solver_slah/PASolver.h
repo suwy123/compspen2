@@ -34,6 +34,7 @@ public:
     z3::check_result check_entl();
     
     void get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space); 
+    void remove_emp(z3::expr& space);
     z3::expr head(z3::expr atom);
     z3::expr tail(z3::expr atom);
     z3::expr_vector get_space_heads(z3::expr space);
