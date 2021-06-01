@@ -104,6 +104,24 @@ void PASolver::check_preds() {
     
 }
 
+z3::expr_vector PASolver::get_disjunct(z3::expr formula){
+	z3::expr_vector disjunct_set(z3_ctx);
+	if(is_fun(formula, "or")){
+		for(int i=0;i<formula.num_args();i++){
+			z3::expr disjunct = formula.arg(i);
+			if(!is_fun(disjunct,"and")){
+	        	expr_vector items(z3_ctx);
+	        	items.push_back(disjunct);
+	        	disjunct = mk_and(items);
+			}
+			disjunct_set.push_back(disjunct);
+		}
+	}else{
+		disjunct_set.push_back(formula);
+	}
+	return disjunct_set;
+}
+
 /**
  * check sat, negf in m_ctx
  * or check entl, negf |= posf
@@ -112,18 +130,26 @@ void PASolver::check_preds() {
 z3::check_result PASolver::check_sat() {
     z3::expr formula = m_problem->getPhi();
     
-    //z3::expr_vector f_new_bools(z3_ctx);
-    z3::expr space(z3_ctx);
-    z3::expr data(z3_ctx); 
-    get_data_space(formula, data, space);//add nil = 0 in data
-    remove_emp(space);
-   
-    z3::expr f_abs = get_abstraction(data, space);
+    z3::expr_vector disjunct_set = get_disjunct(formula);
     
-    z3_sol.reset();
-    z3_sol.add(f_abs);
-    z3::check_result result = z3_sol.check();
-    return result;
+    for(int i = 0;i<disjunct_set.size();i++){
+    	z3::expr disjunct = disjunct_set[i];
+    	z3::expr space(z3_ctx);
+	    z3::expr data(z3_ctx); 
+	    get_data_space(disjunct, data, space);//add nil = 0 in data
+	    remove_emp(space);
+	   
+//std::cout<<"data "<<i<<": "<<data<<std::endl;
+//std::cout<<"space "<<i<<": "<<space<<std::endl;
+
+	    z3::expr f_abs = get_abstraction(data, space);
+	    
+	    z3_sol.reset();
+	    z3_sol.add(f_abs);
+	    z3::check_result result = z3_sol.check();
+	    if(result == z3::sat) return result;
+	}
+    return z3::unsat;
 }
 
 z3::model PASolver::get_model(){
@@ -267,34 +293,58 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 	return z3::unsat;
 }
 
+z3::expr_vector PASolver::get_conjunct(z3::expr formula){
+	z3::expr_vector conjunct_set(z3_ctx);
+	if(!is_fun(formula, "and")) return conjunct_set;
+	Predicate_SLAH *pdef = dynamic_cast<Predicate_SLAH *>(m_problem->getPredicate());
+	for(int i=0;i<formula.num_args();i++){
+    	if(is_fun(formula.arg(i),"and")){
+    		z3::expr_vector sub_conjunct_set = get_conjunct(formula.arg(i));
+    		for(int j=0;j<sub_conjunct_set.size();j++){
+    			conjunct_set.push_back(sub_conjunct_set[j]);
+			}
+		}else if(is_fun(formula.arg(i),"<")||is_fun(formula.arg(i),"<=")||is_fun(formula.arg(i),">")||is_fun(formula.arg(i),">=")
+	       ||is_fun(formula.arg(i),"=")||is_fun(formula.arg(i),"distinct")
+		   ||formula.arg(i).to_string()=="emp"||is_fun(formula.arg(i),"pto")||is_fun(formula.arg(i),"blk")
+		   ||is_fun(formula.arg(i),m_problem->getHeapChunk()->get_name())||is_fun(formula.arg(i),pdef->get_name())
+		   ||is_fun(formula.arg(i),"sep")){
+		   		conjunct_set.push_back(formula.arg(i));
+		}else{
+			std::string info = "invalid conjunct of assert";
+        	throw SemanticException(info);
+		}
+	}
+	return conjunct_set;
+}
+
 void PASolver::get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space) {
 	//formula在assertparser时处理过，若只有一个原子atom会改写成(and atom) 
 	if(Z3_ast(formula)==nullptr) return;
 	expr_vector data_items(z3_ctx);
     data_items.push_back(z3_ctx.int_const("nil") == 0); // nil == 0
-    int num = formula.num_args();
-    int data_num = num-1;
     
     Predicate_SLAH *pdef = dynamic_cast<Predicate_SLAH *>(m_problem->getPredicate()); 
-    if(num>0 && is_fun(formula.arg(num-1),"sep")){//space is (sep ...)
-    	space = formula.arg(num-1);
-	}else if(num>0 && (formula.arg(num-1).to_string()=="emp"||//space is emp
-					   is_fun(formula.arg(num-1),"pto") ||//space is pto
-	                   is_fun(formula.arg(num-1),"blk") ||//space is blk
-	                   is_fun(formula.arg(num-1),m_problem->getHeapChunk()->get_name()) ||//space is hck
-					   is_fun(formula.arg(num-1),pdef->get_name()))){//space is hls
-		z3::sort range = z3_ctx.bool_sort();
-	    z3::sort_vector domains(z3_ctx);
-	    domains.push_back(range);
-	    z3::func_decl sep_f = z3_ctx.function("sep", domains, range);//add ssep to it for consistency
-	    space = sep_f(formula.arg(num-1));
-	}else{//no space
-			data_num = num;
+    
+    z3::expr_vector conjunct_set = get_conjunct(formula);
+    for(int i=0;i<conjunct_set.size();i++){
+    	if(is_fun(conjunct_set[i],"pto")||is_fun(conjunct_set[i],"blk")||is_fun(conjunct_set[i],m_problem->getHeapChunk()->get_name())
+		||is_fun(conjunct_set[i],pdef->get_name())||conjunct_set[i].to_string()=="emp"||is_fun(conjunct_set[i],"sep")){
+			if(Z3_ast(space)==nullptr){
+				if(is_fun(conjunct_set[i],"sep")){
+					space = conjunct_set[i];
+				}else{
+					expr_vector space_items(z3_ctx);
+					space_items.push_back(conjunct_set[i]);
+					space = new_sep(space_items);
+				}
+			}else{
+				std::string info = "invalid conjunct of spatial formula";
+        		throw SemanticException(info);
+			}
+		}else{
+			data_items.push_back(conjunct_set[i]);
+		}
 	}
-	
-	for (int i=0; i<data_num; i++) {
-	    data_items.push_back(formula.arg(i));
-    } 
     
     data = mk_and(data_items);
 }

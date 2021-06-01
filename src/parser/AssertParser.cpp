@@ -26,14 +26,14 @@ void AssertParser::parse(Parser& parser) {
     if (phi.is_app() && phi.decl().name().str() == "not") {
         expr psi(z3_ctx);
 		if(phi.num_args() > 0) psi = phi.arg(0);
-        if(Z3_ast(psi) == nullptr||psi.decl().name().str() != "and"){
+        if(Z3_ast(psi) == nullptr||(psi.decl().name().str() != "and" && psi.decl().name().str() != "or")){
         	expr_vector items(z3_ctx);
         	if(Z3_ast(psi) != nullptr) items.push_back(psi);
         	psi = mk_and(items);
 		}
         parser.addPsi(psi);
     } else {
-    	if(phi.decl().name().str() != "and"){
+    	if(phi.decl().name().str() != "and" && phi.decl().name().str() != "or"){
         	expr_vector items(z3_ctx);
         	items.push_back(phi);
         	phi = mk_and(items);
