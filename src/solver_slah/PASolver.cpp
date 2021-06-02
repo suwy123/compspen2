@@ -199,140 +199,164 @@ z3::model PASolver::get_model(){
  * @return z3::check_result
  */
 z3::check_result PASolver::check_entl() {//suppose no emp
+	z3::expr phi = m_problem->getPhi();
+    z3::expr_vector formula_setA(z3_ctx);
+	formula_setA.push_back(phi);
+	z3::expr_vector disjunct_setA = get_disjunctive_normal_form(formula_setA);
 	
-	z3::expr formulaA = m_problem->getPhi();
-    z3::expr spaceA(z3_ctx);
-    z3::expr dataA(z3_ctx);
-    get_data_space(formulaA, dataA, spaceA);
-    remove_emp(spaceA);
-//std::cout<<"--------------------"<<std::endl;
-//std::cout<<"dataA: "<<dataA<<std::endl;
-//std::cout<<"spaceA: "<<spaceA<<std::endl; 
+	z3::expr psi = m_problem->getPsi();
+    z3::expr_vector formula_setB(z3_ctx);
+	formula_setB.push_back(psi);
+	z3::expr_vector disjunct_setB = get_disjunctive_normal_form(formula_setB);
 
-
-    z3::expr formulaB = m_problem->getPsi();//the part after "not"
-    z3::expr_vector ex_var_set(z3_ctx);
-    if(formulaB.is_quantifier()){
-    	//std::cout<<Z3_get_index_value(z3_ctx(),Z3_ast(hck.arg(1)))<<std::endl;
-		//Z3_symbol ex_sym = Z3_get_quantifier_bound_name(z3_ctx(),Z3_ast(rec_rule_exp),0);
-		//std::string ex_name=Z3_get_symbol_string(z3_ctx(), ex_sym);
-		int ex_size=Z3_get_quantifier_num_bound(z3_ctx,Z3_ast(formulaB));
-		for(int i=0;i<ex_size;i++){
-			Z3_symbol ex_sym = Z3_get_quantifier_bound_name(z3_ctx,Z3_ast(formulaB),i);
-			std::string ex_name=Z3_get_symbol_string(z3_ctx, ex_sym);
-    		z3::expr ex_var = z3_ctx.constant(z3_ctx.str_symbol(ex_name.c_str()),z3_ctx.int_sort());
-    		ex_var_set.push_back(ex_var);
-		}
-		formulaB=formulaB.body();
-		z3::expr_vector emp(z3_ctx);
-		par2arg(formulaB,emp,emp,ex_var_set);
-	}
-    
-    z3::expr spaceB(z3_ctx);
-    z3::expr dataB(z3_ctx);
-    get_data_space(formulaB, dataB, spaceB);
-    remove_emp(spaceB);
-//std::cout<<"--------------------"<<std::endl;
-//std::cout<<"dataB: "<<dataB<<std::endl;
-//std::cout<<"spaceB: "<<spaceB<<std::endl;
-    
-    z3::expr absA = get_abstraction(dataA, spaceA);
-    z3_sol.reset();
-    z3_sol.add(absA);
-    if(z3_sol.check() == z3::unsat) {
-    	//std::cout<<"abs(A) is unsat"<<std::endl;
-    	return z3::unsat;//entl is true when absA is unsat
-    }
-    
-    z3::expr absB = get_abstraction(dataB, spaceB);
-    z3_sol.reset();
-    if(ex_var_set.size()!=0){
-    	z3_sol.add(absA && (!exists(ex_var_set, absB)));
-	}else{
-		z3_sol.add(absA && (!absB));
-	}
-	if(z3_sol.check() == z3::sat){
-    	//std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
-		return z3::sat;//entl is false when Abs(A) \vDash Abs(B) is false
+//std::cout<<disjunct_setB<<std::endl;
+	
+	if(disjunct_setB.size()>1){
+		std::cout<<"psi has disjunction, so if the output is sat, it is not accurate!!!"<<std::endl;
 	}
 	
-	if(Z3_ast(spaceA) == 0){//if spaceA is null,add ssep to it for consistency
-		z3::expr_vector args0(z3_ctx);
-		spaceA = new_sep(args0);
-	}
-//	if (spaceA.decl().name().str() != "sep"){//(tobool (blk x1 x2)) if spaceA has only one atom,add ssep to it for consistency
-//		z3::expr_vector args1(z3_ctx);
-//		args1.push_back(spaceA.arg(0));
-//		spaceA = new_sep(args1);
-//	}
-	if(Z3_ast(spaceB) == 0){//if spaceB is null,add ssep to it for consistency
-		z3::expr_vector args0(z3_ctx);
-		spaceB = new_sep(args0);
-	}
-//	if (spaceB.decl().name().str() != "sep"){//if spaceB has only one atom,add ssep to it for consistency
-//		z3::expr_vector args1(z3_ctx);
-//		args1.push_back(spaceB.arg(0));
-//		spaceB = new_sep(args1);
-//	}
-	
-	if(m_problem->getHeapChunk()!=nullptr){
+	for(int j=0;j<disjunct_setA.size();j++){
+		z3::check_result sub_result = z3::sat;
+		z3::expr formulaA = disjunct_setA[j];
+		z3::expr spaceA(z3_ctx);
+	    z3::expr dataA(z3_ctx);
+	    get_data_space(formulaA, dataA, spaceA);
+	    remove_emp(spaceA);
+		for(int k=0;k<disjunct_setB.size();k++){
+			z3::expr formulaB = disjunct_setB[k];
+			z3::expr_vector ex_var_set(z3_ctx);
+		    if(formulaB.is_quantifier()){
+		    	//std::cout<<Z3_get_index_value(z3_ctx(),Z3_ast(hck.arg(1)))<<std::endl;
+				//Z3_symbol ex_sym = Z3_get_quantifier_bound_name(z3_ctx(),Z3_ast(rec_rule_exp),0);
+				//std::string ex_name=Z3_get_symbol_string(z3_ctx(), ex_sym);
+				int ex_size=Z3_get_quantifier_num_bound(z3_ctx,Z3_ast(formulaB));
+				for(int i=0;i<ex_size;i++){
+					Z3_symbol ex_sym = Z3_get_quantifier_bound_name(z3_ctx,Z3_ast(formulaB),i);
+					std::string ex_name=Z3_get_symbol_string(z3_ctx, ex_sym);
+		    		z3::expr ex_var = z3_ctx.constant(z3_ctx.str_symbol(ex_name.c_str()),z3_ctx.int_sort());
+		    		ex_var_set.push_back(ex_var);
+				}
+				formulaB=formulaB.body();
+				z3::expr_vector emp(z3_ctx);
+				par2arg(formulaB,emp,emp,ex_var_set);
+			}
+		    
+		    z3::expr spaceB(z3_ctx);
+		    z3::expr dataB(z3_ctx);
+		    get_data_space(formulaB, dataB, spaceB);
+		    remove_emp(spaceB);
+std::cout<<"-----------phi_"<<j<<" |= psi_"<<k<<"------------"<<std::endl;
+std::cout<<dataA<<" : "<<spaceA<<std::endl;
+std::cout<<dataB<<" : "<<spaceB<<std::endl;
+		    
+		    z3::expr absA = get_abstraction(dataA, spaceA);
+		    z3_sol.reset();
+		    z3_sol.add(absA);
+		    if(z3_sol.check() == z3::unsat) {
+		    	std::cout<<"abs(A) is unsat"<<std::endl;
+		    	sub_result = z3::unsat;//entl is true when absA is unsat
+		    	break;
+		    }
+		    
+		    z3::expr absB = get_abstraction(dataB, spaceB);
+		    z3_sol.reset();
+		    if(ex_var_set.size()!=0){
+		    	z3_sol.add(absA && (!exists(ex_var_set, absB)));
+			}else{
+				z3_sol.add(absA && (!absB));
+			}
+			if(z3_sol.check() == z3::sat){
+		    	std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
+				continue;//return z3::sat;//entl is false when Abs(A) \vDash Abs(B) is false
+			}
+			
+			if(Z3_ast(spaceA) == 0){//if spaceA is null,add ssep to it for consistency
+				z3::expr_vector args0(z3_ctx);
+				spaceA = new_sep(args0);
+			}
+		//	if (spaceA.decl().name().str() != "sep"){//(tobool (blk x1 x2)) if spaceA has only one atom,add ssep to it for consistency
+		//		z3::expr_vector args1(z3_ctx);
+		//		args1.push_back(spaceA.arg(0));
+		//		spaceA = new_sep(args1);
+		//	}
+			if(Z3_ast(spaceB) == 0){//if spaceB is null,add ssep to it for consistency
+				z3::expr_vector args0(z3_ctx);
+				spaceB = new_sep(args0);
+			}
+		//	if (spaceB.decl().name().str() != "sep"){//if spaceB has only one atom,add ssep to it for consistency
+		//		z3::expr_vector args1(z3_ctx);
+		//		args1.push_back(spaceB.arg(0));
+		//		spaceB = new_sep(args1);
+		//	}
+			
+			if(m_problem->getHeapChunk()!=nullptr){
 //std::cout<<"------changehck--------------"<<std::endl;
-		change_hck(dataA,spaceA);
+				change_hck(dataA,spaceA);
 //std::cout<<"dataA: "<<dataA<<std::endl;
 //std::cout<<"spaceA: "<<spaceA<<std::endl; 
-		change_hck(dataB,spaceB,ex_var_set);
+				change_hck(dataB,spaceB,ex_var_set);
 //std::cout<<"dataB: "<<dataB<<std::endl;
 //std::cout<<"spaceB: "<<spaceB<<std::endl;
 //std::cout<<"ex_var_set: " <<ex_var_set<<std::endl;
+			}
+		
+			z3::expr_vector headsA = get_space_heads(spaceA);
+		    z3::expr_vector tailsA = get_space_tails(spaceA);
+		    z3::expr_vector tailsB = get_space_tails(spaceB);
+		    z3::expr_vector headsB = get_space_heads(spaceB);
+			//adds:headsA,tailsA,tailsB without repitition
+			z3::expr_vector adds(z3_ctx);
+			for(int i = 0; i < headsA.size(); i++){
+				adds.push_back(headsA[i]);
+			}
+			for(int i = 0; i < tailsA.size(); i++){
+				if(find_index(adds,tailsA[i]) == -1) adds.push_back(tailsA[i]);
+			}
+			for(int i = 0; i < tailsB.size(); i++){
+				if(find_index(adds,tailsB[i]) == -1) adds.push_back(tailsB[i]);
+			}
+			for(int i = 0; i < headsB.size(); i++){
+				if(find_index(adds,headsB[i]) == -1) adds.push_back(headsB[i]);
+			}
+		//clock_t start, end;
+		//start = clock();
+			rel.init(adds,absA);
+		//rel.print();
+		//end = clock();
+		//std::cout <<"get_init_relations:"<< (double)(end - start)/(double)CLOCKS_PER_SEC <<std::endl;
+		//system("read REPLY");
+		
+			z3::expr_vector args_emp(z3_ctx);
+		    z3::expr spaceAhls(z3_ctx);
+			spaceAhls = new_sep(args_emp);
+		    z3::expr spaceBhls(z3_ctx);
+			spaceBhls = new_sep(args_emp);
+			try{
+				z3::expr_vector pi_ex_set(z3_ctx);
+				z3::expr pi_ex=z3_ctx.bool_val(true);
+				pi_ex_set.push_back(pi_ex);
+		    	pre_match(absA, spaceA, absB, spaceB, ex_var_set, pi_ex_set);//因为里面match_atom时需要全部的absA，如果只有dataA就会丢失一些约束。传absB是因为后面加入所有存在变量取值的约束后还需要看整个蕴涵是否成立 
+		   	    pre_P(spaceA, dataA, spaceB, absB, absA, spaceAhls, spaceBhls, ex_var_set, pi_ex_set);
+			}catch(int e){
+				continue;//return z3::sat;
+			}
+			
+			sub_result = z3::unsat;//return z3::unsat;
+			break;
+		}
+		if(sub_result == z3::sat){
+			return z3::sat;
+		}
 	}
-
-	z3::expr_vector headsA = get_space_heads(spaceA);
-    z3::expr_vector tailsA = get_space_tails(spaceA);
-    z3::expr_vector tailsB = get_space_tails(spaceB);
-    z3::expr_vector headsB = get_space_heads(spaceB);
-	//adds:headsA,tailsA,tailsB without repitition
-	z3::expr_vector adds(z3_ctx);
-	for(int i = 0; i < headsA.size(); i++){
-		adds.push_back(headsA[i]);
-	}
-	for(int i = 0; i < tailsA.size(); i++){
-		if(find_index(adds,tailsA[i]) == -1) adds.push_back(tailsA[i]);
-	}
-	for(int i = 0; i < tailsB.size(); i++){
-		if(find_index(adds,tailsB[i]) == -1) adds.push_back(tailsB[i]);
-	}
-	for(int i = 0; i < headsB.size(); i++){
-		if(find_index(adds,headsB[i]) == -1) adds.push_back(headsB[i]);
-	}
-//clock_t start, end;
-//start = clock();
-	rel.init(adds,absA);
-//rel.print();
-//end = clock();
-//std::cout <<"get_init_relations:"<< (double)(end - start)/(double)CLOCKS_PER_SEC <<std::endl;
-//system("read REPLY");
-
-	z3::expr_vector args_emp(z3_ctx);
-    z3::expr spaceAhls(z3_ctx);
-	spaceAhls = new_sep(args_emp);
-    z3::expr spaceBhls(z3_ctx);
-	spaceBhls = new_sep(args_emp);
-	try{
-		z3::expr_vector pi_ex_set(z3_ctx);
-		z3::expr pi_ex=z3_ctx.bool_val(true);
-		pi_ex_set.push_back(pi_ex);
-    	pre_match(absA, spaceA, absB, spaceB, ex_var_set, pi_ex_set);//因为里面match_atom时需要全部的absA，如果只有dataA就会丢失一些约束。传absB是因为后面加入所有存在变量取值的约束后还需要看整个蕴涵是否成立 
-   	    pre_P(spaceA, dataA, spaceB, absB, absA, spaceAhls, spaceBhls, ex_var_set, pi_ex_set);
-	}catch(int e){
-		return z3::sat;
-	}
-	
 	return z3::unsat;
 }
 
 z3::expr_vector PASolver::get_conjunct(z3::expr formula){
 	z3::expr_vector conjunct_set(z3_ctx);
-	if(!is_fun(formula, "and")) return conjunct_set;
+	if(!is_fun(formula, "and")){//disjunct中可能是原子或空间公式 
+		conjunct_set.push_back(formula);
+		return conjunct_set;
+	}
 	Predicate_SLAH *pdef = dynamic_cast<Predicate_SLAH *>(m_problem->getPredicate());
 	for(int i=0;i<formula.num_args();i++){
     	if(is_fun(formula.arg(i),"and")){
@@ -355,7 +379,7 @@ z3::expr_vector PASolver::get_conjunct(z3::expr formula){
 }
 
 void PASolver::get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space) {
-	//formula在assertparser时处理过，若只有一个原子atom会改写成(and atom) 
+	//formula在assertparser时处理过，若只有一个原子atom会改写成(and atom)  ，//disjunct中可能是原子或空间公式 
 	if(Z3_ast(formula)==nullptr) return;
 	expr_vector data_items(z3_ctx);
     data_items.push_back(z3_ctx.int_const("nil") == 0); // nil == 0
