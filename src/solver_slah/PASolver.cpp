@@ -212,7 +212,9 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 //std::cout<<disjunct_setB<<std::endl;
 	
 	if(disjunct_setB.size()>1){
+		std::cout<<std::endl;
 		std::cout<<"psi has disjunction, so if the output is sat, it is not accurate!!!"<<std::endl;
+		std::cout<<std::endl;
 	}
 	
 	for(int j=0;j<disjunct_setA.size();j++){
