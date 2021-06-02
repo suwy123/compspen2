@@ -104,21 +104,51 @@ void PASolver::check_preds() {
     
 }
 
-z3::expr_vector PASolver::get_disjunct(z3::expr formula){
+z3::expr_vector PASolver::get_disjunctive_normal_form(z3::expr_vector formula_set){
+//std::cout<<formula_set<<std::endl;
 	z3::expr_vector disjunct_set(z3_ctx);
-	if(is_fun(formula, "or")){
-		for(int i=0;i<formula.num_args();i++){
-			z3::expr disjunct = formula.arg(i);
-			if(!is_fun(disjunct,"and")){
-	        	expr_vector items(z3_ctx);
-	        	items.push_back(disjunct);
-	        	disjunct = mk_and(items);
+	for(int j=0;j<formula_set.size();j++){
+		z3::expr_vector item_set(z3_ctx);
+		z3::expr formula = formula_set[j];
+		z3::expr_vector sub_disjunct_set(z3_ctx);
+		if(is_fun(formula, "and")){
+			bool pi_and_porp = false;
+			for(int i=0;i<formula.num_args();i++){
+				if(is_fun(formula.arg(i), "or")){
+					pi_and_porp = true;
+					z3::expr_vector sub_formula_set(z3_ctx);
+					for(int k=0;k<formula.arg(i).num_args();k++){
+						sub_formula_set.push_back(formula.arg(i).arg(k));
+					}
+					sub_disjunct_set = get_disjunctive_normal_form(sub_formula_set);
+				}else{
+					item_set.push_back(formula.arg(i));
+				}
 			}
-			disjunct_set.push_back(disjunct);
+			if(pi_and_porp){
+				for(int k=0;k<sub_disjunct_set.size();k++){
+					item_set.push_back(sub_disjunct_set[k]);
+					disjunct_set.push_back(mk_and(item_set));
+					item_set.pop_back();
+				}
+			}else{
+				disjunct_set.push_back(formula);
+			}
+		}else if(is_fun(formula, "or")){
+			z3::expr_vector sub_formula_set(z3_ctx);
+			for(int i=0;i<formula.num_args();i++){
+				sub_formula_set.push_back(formula.arg(i));
+			}
+			sub_disjunct_set = get_disjunctive_normal_form(sub_formula_set);
+			for(int i=0;i<sub_disjunct_set.size();i++){
+				disjunct_set.push_back(sub_disjunct_set[i]);
+			}
+		}else{
+			disjunct_set.push_back(formula);
 		}
-	}else{
-		disjunct_set.push_back(formula);
 	}
+//std::cout<<"result-------------"<<std::endl;
+//std::cout<<disjunct_set<<std::endl;
 	return disjunct_set;
 }
 
@@ -130,7 +160,9 @@ z3::expr_vector PASolver::get_disjunct(z3::expr formula){
 z3::check_result PASolver::check_sat() {
     z3::expr formula = m_problem->getPhi();
     
-    z3::expr_vector disjunct_set = get_disjunct(formula);
+	z3::expr_vector formula_set(z3_ctx);
+	formula_set.push_back(formula);
+	z3::expr_vector disjunct_set = get_disjunctive_normal_form(formula_set);
     
     for(int i = 0;i<disjunct_set.size();i++){
     	z3::expr disjunct = disjunct_set[i];
@@ -150,6 +182,11 @@ z3::check_result PASolver::check_sat() {
 	    if(result == z3::sat) return result;
 	}
     return z3::unsat;
+}
+
+z3::model PASolver::get_model(){
+	z3::model m(z3_ctx);
+	return m;
 }
 
 z3::model PASolver::get_model(){
