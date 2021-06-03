@@ -392,8 +392,8 @@ z3::expr_vector PASolver::get_conjunct(z3::expr formula){
 		   ||is_fun(formula.arg(i),"sep")){
 		   		conjunct_set.push_back(formula.arg(i));
 		}else{
-			std::string info = "invalid conjunct of assert";
-        	throw SemanticException(info);
+			std::string info = "invalid conjunct of spatial formula in assertion.\n";
+        	throw SyntaxException(info);
 		}
 	}
 	return conjunct_set;
