@@ -13,8 +13,9 @@ class slah_api{
 private:
 	static HeapChunk* setHck();
 	static Predicate* setHls();
+	static bool is_fun(z3::expr expr, std::string fname);
 public:
-	static z3::expr sep(z3::expr spatialFormula, z3::expr spatialAtom);//spatialFormula * spatialAtom
+	static z3::expr sep(z3::expr spatialFormula1, z3::expr spatialFormula2);//spatialFormula * spatialAtom
 	static z3::expr newSep(z3::expr_vector spatialAtomSet);//spatialAtom1 * spatialAtom2 * ...
 	static z3::expr newBlk(z3::expr x, z3::expr y);//blk(x,y)
 	static z3::expr newPto(z3::expr x, z3::expr y);//x |-> y

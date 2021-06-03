@@ -28,9 +28,11 @@ private:
 
 	static Predicate* setHls();
 
+	static bool is_fun(z3::expr expr, std::string fname);
+
 public:
 
-	static z3::expr sep(z3::expr spatialFormula, z3::expr spatialAtom);//spatialFormula * spatialAtom
+	static z3::expr sep(z3::expr spatialFormula1, z3::expr spatialFormula2);//spatialFormula * spatialAtom
 
 	static z3::expr newSep(z3::expr_vector spatialAtomSet);//spatialAtom1 * spatialAtom2 * ...
 

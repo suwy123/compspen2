@@ -6,29 +6,69 @@ extern z3::context z3_ctx;
 
 
 
+bool slah_api::is_fun(z3::expr expr, std::string fname) {
+
+        if (expr.is_app() && expr.decl().name().str() == fname) return true;
+
+        return false;
+
+}
 
 
-z3::expr slah_api::sep(z3::expr spatialFormula, z3::expr spatialAtom){
+
+
+
+z3::expr slah_api::sep(z3::expr spatialFormula1, z3::expr spatialFormula2){
+
+	if(Z3_ast(spatialFormula1)==nullptr) return spatialFormula2;
+
+	if(Z3_ast(spatialFormula2)==nullptr) return spatialFormula1;
 
 	z3::expr_vector spatialAtomSet(z3_ctx);
 
-	if(spatialFormula.decl().name().str() == "sep"){
+	if(is_fun(spatialFormula1, "sep") && is_fun(spatialFormula2, "sep")){
 
-	    for (unsigned i=0; i<spatialFormula.num_args(); i++) {
+	    for (int i=0; i<spatialFormula1.num_args(); i++) {
 
-	    	spatialAtomSet.push_back(spatialFormula.arg(i));
+	    	spatialAtomSet.push_back(spatialFormula1.arg(i));
 
 	    }
 
+	    for (int i=0; i<spatialFormula2.num_args(); i++) {
+
+	    	spatialAtomSet.push_back(spatialFormula2.arg(i));
+
+	    }
+
+	}else if(is_fun(spatialFormula1, "sep")){
+
+	    for (int i=0; i<spatialFormula1.num_args(); i++) {
+
+	    	spatialAtomSet.push_back(spatialFormula1.arg(i));
+
+	    }
+
+	    spatialAtomSet.push_back(spatialFormula2);
+
+	}else if(is_fun(spatialFormula2, "sep")){
+
+	    spatialAtomSet.push_back(spatialFormula1);
+
+	    for (int i=0; i<spatialFormula2.num_args(); i++) {
+
+	    	spatialAtomSet.push_back(spatialFormula2.arg(i));
+
+	    }	
+
 	}else{
 
-		spatialAtomSet.push_back(spatialFormula);
+	    spatialAtomSet.push_back(spatialFormula1);
+
+	    spatialAtomSet.push_back(spatialFormula2);
 
 	}
 
-    spatialAtomSet.push_back(spatialAtom);
-
-    return newSep(spatialAtomSet);
+	return newSep(spatialAtomSet);
 
 }
 
@@ -113,10 +153,15 @@ z3::expr slah_api::newEmp(){
 
 
 z3::check_result slah_api::checkSat(z3::expr phi){
+
 	if(Z3_ast(phi) == nullptr||phi.decl().name().str() != "and"){
-    	expr_vector items(z3_ctx);
-    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
-    	phi = z3::mk_and(items);
+
+	    	expr_vector items(z3_ctx);
+
+	    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
+
+	    	phi = z3::mk_and(items);
+
 	}
 
 	Problem m_problem;
@@ -154,16 +199,28 @@ z3::check_result slah_api::checkSat(z3::expr phi){
 
 
 z3::check_result slah_api::checkEnt(z3::expr phi, z3::expr psi){
+
 	if(Z3_ast(phi) == nullptr||phi.decl().name().str() != "and"){
-    	expr_vector items(z3_ctx);
-    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
-    	phi = z3::mk_and(items);
+
+	    	expr_vector items(z3_ctx);
+
+	    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
+
+	    	phi = z3::mk_and(items);
+
 	}
+
 	if(Z3_ast(psi) == nullptr||psi.decl().name().str() != "and"){
-    	expr_vector items(z3_ctx);
-    	if(Z3_ast(psi) != nullptr) items.push_back(psi);
-    	psi = z3::mk_and(items);
+
+	    	expr_vector items(z3_ctx);
+
+	    	if(Z3_ast(psi) != nullptr) items.push_back(psi);
+
+	    	psi = z3::mk_and(items);
+
 	}
+
+
 
 	Problem m_problem;
 
