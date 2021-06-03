@@ -1,6 +1,7 @@
 #include "solver_slah/PASolver.h"
 #include "component/Predicate_SLAH.h"
 #include "exception/SemanticException.h"
+#include "exception/SyntaxException.h"
 #include "solver_slid_int/expr_tool.h"
 //#include "time_tool.h"
 
@@ -120,7 +121,25 @@ z3::expr_vector PASolver::get_disjunctive_normal_form(z3::expr_vector formula_se
 					for(int k=0;k<formula.arg(i).num_args();k++){
 						sub_formula_set.push_back(formula.arg(i).arg(k));
 					}
+					if(sub_disjunct_set.size()!=0){
+						std::string info = "invalid conjunct of spatial formula in assertion.\n";
+    					throw SyntaxException(info);
+					}
 					sub_disjunct_set = get_disjunctive_normal_form(sub_formula_set);
+				}else if(is_fun(formula.arg(i), "and")){
+					z3::expr_vector sub_formula_set(z3_ctx);
+					sub_formula_set.push_back(formula.arg(i));
+					z3::expr_vector tmp = get_disjunctive_normal_form(sub_formula_set);
+					if(tmp.size()>1){//there is "or" in formula.arg(i)
+						if(sub_disjunct_set.size()!=0){
+							std::string info = "invalid conjunct of spatial formula in assertion.\n";
+        					throw SyntaxException(info);
+						}
+						sub_disjunct_set = tmp;
+						pi_and_porp = true;
+					}else{
+						item_set.push_back(formula.arg(i));
+					}
 				}else{
 					item_set.push_back(formula.arg(i));
 				}
