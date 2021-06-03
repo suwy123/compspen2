@@ -266,15 +266,18 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 		    z3::expr dataB(z3_ctx);
 		    get_data_space(formulaB, dataB, spaceB);
 		    remove_emp(spaceB);
-std::cout<<"-----------phi_"<<j<<" |= psi_"<<k<<"------------"<<std::endl;
-std::cout<<dataA<<" : "<<spaceA<<std::endl;
-std::cout<<dataB<<" : "<<spaceB<<std::endl;
+//if(disjunct_setA.size()>1 || disjunct_setB.size()>1){
+//std::cout<<"++++++++++++++++++++++++++++++++phi_"<<j<<" |= psi_"<<k<<"+++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+//std::cout<<dataA<<" : "<<spaceA<<std::endl;
+//std::cout<<" |= "<<std::endl;
+//std::cout<<dataB<<" : "<<spaceB<<std::endl;
+//}
 		    
 		    z3::expr absA = get_abstraction(dataA, spaceA);
 		    z3_sol.reset();
 		    z3_sol.add(absA);
 		    if(z3_sol.check() == z3::unsat) {
-		    	std::cout<<"abs(A) is unsat"<<std::endl;
+		    	//std::cout<<"abs(A) is unsat"<<std::endl;
 		    	sub_result = z3::unsat;//entl is true when absA is unsat
 		    	break;
 		    }
@@ -287,7 +290,7 @@ std::cout<<dataB<<" : "<<spaceB<<std::endl;
 				z3_sol.add(absA && (!absB));
 			}
 			if(z3_sol.check() == z3::sat){
-		    	std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
+		    	//std::cout<<"Abs(A) entl Abs(B) is false"<<std::endl;
 				continue;//return z3::sat;//entl is false when Abs(A) \vDash Abs(B) is false
 			}
 			
