@@ -1,8 +1,8 @@
 #include "solver_slah/Relation.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
-Relation::Relation():sol(z3_ctx){}
+Relation::Relation(z3::context& z3_ctx):sol(z3_ctx){}
 
 void Relation::init(z3::expr_vector adds,z3::expr cons){
 	size = adds.size();

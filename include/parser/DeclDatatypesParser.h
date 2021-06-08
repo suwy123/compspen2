@@ -16,7 +16,7 @@
 class DeclDatatypesParser: public CommandParser
 {
 public:
-    DeclDatatypesParser() { }
+    DeclDatatypesParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) { }
     virtual ~DeclDatatypesParser() { }
 
     virtual void parse(Parser& parser);

@@ -23,7 +23,8 @@ private:
 	int ex_newvar_index;//change_hck of B
 	Relation rel;
 public:
-	PASolver();
+	z3::context& z3_ctx;
+	PASolver(z3::context& ctx);
 	~PASolver(){}
 	void setProblem(Problem* problem){m_problem = problem;}
     void solve();
@@ -52,7 +53,9 @@ public:
     
     z3::expr new_sep(z3::expr_vector args);
     z3::expr newblk(z3::expr source, z3::expr dest);
+    z3::expr newpto(z3::expr source, z3::expr dest);
     
+    bool is_fun(z3::expr expr, std::string fname);
     bool ishck(z3::expr atom);
     //int hck_index(z3::expr atom);
     //bool isP(z3::expr atom,predicate &Pdef);

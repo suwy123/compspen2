@@ -13,10 +13,10 @@
 #include "solver_slid_int/listsolver.h"
 #include "solver_slid_int/alistsolver.h"
 #include "solver_slah/PASolver.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer;
+//extern Z3Buffer z3_buffer;
 
 void CheckSatParser::parse(Parser& parser) {
     parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
@@ -26,20 +26,20 @@ void CheckSatParser::parse(Parser& parser) {
     Problem* problem = parser.getProblem();
     problem->show();
     if(problem->getLogic()=="QF_SLID_SET"){
-    	SepSolver ss;
+    	SepSolver ss(z3_ctx,z3_buffer);
     	ss.setProblem(problem);
     	ss.solve();
 	}else if(problem->getLogic()=="QF_SLID_INT"){
 		Predicate_SLID_INT *pred = dynamic_cast<Predicate_SLID_INT *>(problem->getPredicate()); 
 		if (pred->get_pars().size() == 2) {
-            alistsolver ss(problem);
+            alistsolver ss(z3_ctx, problem);
             ss.solve();
         } else {
-            listsolver ss(problem);
+            listsolver ss(z3_ctx, problem);
 			ss.solve();
         }
 	}else if(problem->getLogic()=="QF_SLAH"){
-    	PASolver ss;
+    	PASolver ss(z3_ctx);
     	ss.setProblem(problem);
     	ss.solve();
 	}else{

@@ -1,9 +1,8 @@
 #include "solver_slid_set/MonaTranslator.h"
-#include "component/Z3Buffer.h"
 #include <fstream>
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 std::string mop_strs[] = {"UNDEF",
     " & ", " | ", "~", " => ", " <= ",
@@ -12,7 +11,8 @@ std::string mop_strs[] = {"UNDEF",
     " inter ", " \\ "
 };
 
-MonaTranslator::MonaTranslator(z3::expr formula):  m_formula(formula){
+MonaTranslator::MonaTranslator(z3::context& ctx, Z3Buffer& buffer, z3::expr formula)
+: m_formula(formula), z3_ctx(ctx), z3_buffer(buffer){
     op_map["and"] = MONA_AND;
     op_map["or"] = MONA_OR;
     op_map["not"] = MONA_NOT;

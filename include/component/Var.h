@@ -4,6 +4,7 @@
 
 #include "Types.h"
 #include "component/SortType.h"
+#include "component/Z3Buffer.h"
 #include "z3++.h"
 
 using namespace z3;
@@ -16,8 +17,11 @@ using namespace z3;
 class Var
 {
 public:
-    Var() {}
-    Var(string var_name, SortType* sort): m_var_name(var_name), m_sort_type(sort) {}
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer;
+    Var(z3::context& ctx, Z3Buffer& buffer): z3_ctx(ctx), z3_buffer(buffer) {}
+    Var(z3::context& ctx, Z3Buffer& buffer, string var_name, SortType* sort)
+	: z3_ctx(ctx), z3_buffer(buffer), m_var_name(var_name), m_sort_type(sort) {}
     virtual ~Var() {}
 
     string getName() {return m_var_name;}

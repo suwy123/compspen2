@@ -1,10 +1,10 @@
 #include "component/Predicate_SLID_INT.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
-Predicate_SLID_INT::Predicate_SLID_INT(z3::func_decl fun, z3::expr_vector pars, z3::expr base, z3::expr rec)
-        :Predicate(pars,base,rec), 
-        m_fun(fun), m_data(z3_ctx), m_pto(z3_ctx), m_rec_app(z3_ctx) {
+Predicate_SLID_INT::Predicate_SLID_INT(z3::context& ctx, z3::func_decl fun, z3::expr_vector pars, z3::expr base, z3::expr rec)
+        :Predicate(ctx, pars,base,rec), 
+        m_fun(fun), m_data(ctx), m_pto(ctx), m_rec_app(ctx) {
         	check_rec_rule(rec);
 		}
 		

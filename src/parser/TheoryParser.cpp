@@ -63,7 +63,7 @@ void TheoryParser::parse(Parser& parser) {
                 int snum = dynamic_cast<IntToken*>(curr)->value();
                 scanner.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
                 // cout << "SORT: " << sort << ", " << snum << endl;
-                SortType* p_sort = new SortType(sort, snum);
+                SortType* p_sort = new SortType(z3_ctx, sort, snum);
                 parser.addSort(sort, p_sort);
             }
             if (curr == nullptr || curr->type() != RIGHT_PAREN) {
@@ -118,12 +118,12 @@ void TheoryParser::parse(Parser& parser) {
 
                 FuncType* p_fun = nullptr; 
                 if (par_flag) {
-                    p_fun = new ParFuncType(fun_name);
+                    p_fun = new ParFuncType(z3_ctx, z3_buffer, fun_name);
                 } else {
                     if (fun_name == "-" && attr == "NONE") {
                         fun_name = "--"; // negative
                     }
-                    p_fun = new FuncType(fun_name);
+                    p_fun = new FuncType(z3_ctx,z3_buffer,fun_name);
                 }
 
                 for (string par: par_list) {

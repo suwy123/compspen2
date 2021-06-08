@@ -11,6 +11,7 @@
 *******************************************/
 
 #include "component/SortType.h"
+#include "component/Z3Buffer.h"
 #include "Types.h"
 #include "z3++.h"
 
@@ -20,6 +21,7 @@ using ParTypeList = vector<string>;
 using ParTypeSet = set<string>;
 using FuncDeclBucket = map<string, string>;
 
+
 /*! @class FuncType
  *  @brief Brief class description
  *
@@ -28,8 +30,10 @@ using FuncDeclBucket = map<string, string>;
 class FuncType
 {
 public:
-    FuncType(string name, string attr="", bool determine=true)
-        :m_name(name), m_attr(attr), m_determine(determine){}
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer;
+    FuncType(z3::context& ctx, Z3Buffer& buffer, string name, string attr="", bool determine=true)
+        :z3_ctx(ctx), z3_buffer(buffer), m_name(name), m_attr(attr), m_determine(determine){}
     virtual void addArg(string arg) {m_arg_list.push_back(arg);}
     virtual void addPar(string par) {}
     void setAttr(string attr) {m_attr = attr;}
@@ -74,7 +78,7 @@ protected:
 class ParFuncType :public FuncType
 {
 public:
-    ParFuncType(string name):FuncType(name, "", false) {}
+    ParFuncType(z3::context& ctx, Z3Buffer& buffer, string name):FuncType(ctx, buffer, name, "", false) {}
     virtual ~ParFuncType() {}
     virtual void addPar(string par) {m_par_set.insert(par);}
     virtual void addArg(string arg); 

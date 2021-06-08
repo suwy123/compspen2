@@ -11,12 +11,12 @@
 #include "Parser.h"
 #include "Types.h"
 #include "CommandParserFactory.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer;
-extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
 
 /*! @brief Brief function description here
  *
@@ -26,7 +26,7 @@ extern z3::context z3_ctx;
  */
 void Parser::parse() {
     // parse ( and symbol
-    CommandParserFactory factory;
+    CommandParserFactory factory(z3_ctx,z3_buffer);
     CommandParser* cmd_parser;
     Token* curr = nullptr;
     while((curr=nextToken())!=nullptr
@@ -220,7 +220,8 @@ void Parser::show() {
 }
 
 
-Parser::Parser(istream& is, TokenScannerFactory& factory) :m_scanner(is), m_factory(factory) { 
+Parser::Parser(istream& is, TokenScannerFactory& factory, z3::context& ctx, Z3Buffer& buffer) 
+:m_scanner(is), m_factory(factory), z3_ctx(ctx), z3_buffer(buffer), m_problem(ctx) { 
     addVarScope();
 }
 

@@ -11,14 +11,13 @@
 *******************************************/
 
 #include "z3++.h"
-#include "Var.h"
 #include "SortType.h"
-#include "FuncType.h"
 #include <map>
-#include "Parser.h"
+//#include "Parser.h"
 
 using namespace z3;
 using std::map;
+
 
 /**
  * the expr comparator
@@ -31,10 +30,16 @@ public:
 };
 
 using Z3ExprSet = set<expr, exprcomp>;
+using ArgTypeList = vector<SortType*>;
+using ParTypeList = vector<string>;
+class FuncType;
+class Parser;
+class Var;
 
 class Z3Buffer {
 public:
-    Z3Buffer() {}
+	z3::context& z3_ctx;
+    Z3Buffer(z3::context& ctx): z3_ctx(ctx) {}
 
     sort& getSort(SortType* pst); 
 

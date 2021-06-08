@@ -11,6 +11,7 @@
 *******************************************/
 
 #include <iostream>
+#include "z3++.h"
 #include "Types.h"
 #include "Scanner.h"
 #include "TokenScannerFactory.h"
@@ -20,6 +21,7 @@
 #include "component/SortType.h"
 #include "component/Var.h"
 #include "component/Problem.h"
+
 
 using SortTable = map<string, SortType*>; 
 using FuncTable = map<string, FuncType*>;
@@ -31,6 +33,8 @@ using ArgScopeStack = vector<int>;
 
 using VarList = vector<Var*>;
 
+class Z3Buffer;
+
 /*! @class Parser
  *  @brief Brief class description
  *
@@ -39,7 +43,9 @@ using VarList = vector<Var*>;
 class Parser
 {
 public:
-    Parser(istream& is, TokenScannerFactory& factory);
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer;
+    Parser(istream& is, TokenScannerFactory& factory, z3::context& ctx, Z3Buffer& buffer);
     virtual ~Parser();
     void parse();
     void skip() {m_scanner.skip();}

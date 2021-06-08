@@ -13,13 +13,16 @@
 #include "component/Problem.h"
 #include "component/Predicate_SLID_SET.h"
 #include "solver_slid_set/Graph.h"
+#include "component/Z3Buffer.h"
 
 using EdgeType = pair<pair<int, int>, int>;
 using RelationMatrix = vector<vector<int>>;
 
 class SepSolver {
 public:
-    SepSolver();
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer;
+    SepSolver(z3::context& ctx, Z3Buffer& buffer);
     virtual ~SepSolver(); 
     void setProblem(Problem* problem); 
 

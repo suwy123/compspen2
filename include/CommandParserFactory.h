@@ -13,7 +13,7 @@
 
 #include "component/CommandParserBuffer.h"
 
-extern CommandParserBuffer cmd_parser_buffer;
+//extern CommandParserBuffer cmd_parser_buffer;
 
 
 /*! @class CommandParserFactory
@@ -24,11 +24,11 @@ extern CommandParserBuffer cmd_parser_buffer;
 class CommandParserFactory
 {
 public:
-    CommandParserFactory() :m_buffer(cmd_parser_buffer) {}
+    CommandParserFactory(z3::context& z3_ctx, Z3Buffer& z3_buffer) :m_buffer(z3_ctx, z3_buffer) {}
     virtual ~CommandParserFactory() {}
     CommandParser* getCommandParser(const string& sign); 
 
 private:
-    CommandParserBuffer& m_buffer;
+    CommandParserBuffer m_buffer;
 };
 #endif

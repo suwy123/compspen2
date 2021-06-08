@@ -9,12 +9,12 @@
 *******************************************/
 
 #include "parser/DefineFunctionParser.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 #include "solver_slah/HeapChunk.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer; 
-extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer; 
+//extern z3::context z3_ctx;
 
 void DefineFunctionParser::parse(Parser& parser) {
 	if(parser.getProblem()->getLogic() != "QF_SLAH"){ 
@@ -25,7 +25,7 @@ void DefineFunctionParser::parse(Parser& parser) {
     string fname = dynamic_cast<StrToken*>(curr)->value();
     parseParameters(parser);
 
-    FuncType* pf = new FuncType(fname);
+    FuncType* pf = new FuncType(z3_ctx,z3_buffer,fname);
 
     VarList vpars;
     parser.topVar(vpars);
@@ -61,9 +61,9 @@ void DefineFunctionParser::parse(Parser& parser) {
 		ex_size=Z3_get_quantifier_num_bound(z3_ctx,Z3_ast(exp));
         exp = exp.body();
 	}
-    HeapChunk* hck = new HeapChunk(fun, pars, exp, ex_size);
+    HeapChunk* hck = new HeapChunk(z3_ctx, fun, pars, exp, ex_size);
 	//hck->show();
 	
     parser.addHeapChunk(hck);
-cout<<"define-fun done"<<endl;
+//cout<<"define-fun done"<<endl;
 }

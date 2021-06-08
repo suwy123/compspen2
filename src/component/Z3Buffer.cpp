@@ -9,9 +9,10 @@
 *******************************************/
 
 #include "component/Z3Buffer.h"
+#include "Parser.h"
 #include <algorithm>
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 void Z3Buffer::init(Parser& parser) {
 

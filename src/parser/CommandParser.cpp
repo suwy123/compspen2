@@ -9,11 +9,11 @@
 *******************************************/
 
 #include "CommandParser.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 SortType* CommandParser::parseSortDecl(Parser& parser) {
     Token* curr = parser.checkNext(SYMBOL_TOKEN, SYNTAX_ERROR_INFO[SYMBOL_TOKEN]);
@@ -26,7 +26,7 @@ SortType* CommandParser::parseSortDecl(Parser& parser) {
 
     curr = parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
 
-    SortType* p_sort = new SortType(sort, snum);
+    SortType* p_sort = new SortType(z3_ctx, sort, snum);
     // parser.addSort(sort, p_sort, row, col);
     return p_sort;
 }
@@ -123,7 +123,7 @@ void CommandParser::parseParameters(Parser& parser) {
         SortType* sort = parseSort(parser);
         parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
         // action
-        Var* pa = new Var(pname, sort);
+        Var* pa = new Var(z3_ctx, z3_buffer, pname, sort);
         parser.addVar(pa);
     }
 }

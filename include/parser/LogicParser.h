@@ -30,7 +30,7 @@ public:
 
     protected:
     string m_logic; ///< Member description
-    const string m_prefix="/home/swy/compspen2/theorylogic/Logics/";
+    const string m_prefix="/home/swy/workspace/compspen/logic_def/Logics/";
     TokenScannerFactory m_factory;
     
     LogicInfo m_info;

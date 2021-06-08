@@ -20,7 +20,7 @@
 class SetLogicParser : public CommandParser
 {
 public:
-    SetLogicParser() {}
+    SetLogicParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer){}
     virtual ~SetLogicParser() {}
     virtual void parse(Parser& parser);
 };

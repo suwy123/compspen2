@@ -1,14 +1,13 @@
 #include "solver_slid_set/FA.h"
-#include "component/Z3Buffer.h"
 #include <iostream>
 #include <fstream>
 #include <random>
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 
-FA::FA(const FA& other) {
+FA::FA(const FA& other):z3_ctx(other.z3_ctx), z3_buffer(other.z3_buffer) {
     m_init_state = other.m_init_state;
     m_state_num = other.m_state_num;
     m_accept_states.clear();
@@ -20,6 +19,8 @@ FA::FA(const FA& other) {
 
 FA& FA::operator=(const FA& other) {
     if (this != &other) {
+    	//z3_ctx = other.z3_ctx;
+		//z3_buffer = other.z3_buffer;
         m_init_state = other.m_init_state;
         m_state_num = other.m_state_num;
         m_accept_states.clear();
@@ -67,7 +68,7 @@ void FA::addTransition(transition& tr) {
  * @param result
  */
 FA FA::product(FA& other) {
-    FA result;
+    FA result(z3_ctx, z3_buffer);
     if (!isSameAlphabet(other)) {
         std::cout << "THE ALPHABET IS NOT SAME!\n";
         exit(-1);
@@ -149,7 +150,7 @@ FA FA::product(FA& other) {
  * @return
  */
 FA FA::stateAsEdge() {
-    FA result;
+    FA result(z3_ctx, z3_buffer);
     result.m_init_state = 0;
     result.m_state_num = m_state_num + 1;
     for (int i=0; i<m_accept_states.size(); i++) {
@@ -185,7 +186,7 @@ FA FA::stateAsEdge() {
  * get subgraph of G
  */
 FA FA::getSubgraph(int N) {
-    FA result;
+    FA result(z3_ctx, z3_buffer);
 
     std::set<int> valid_ids;
     getValidStates(m_accept_states[0], valid_ids);
@@ -273,7 +274,7 @@ FA FA::getSubgraph(int N) {
  * get flow as NFA
  */
 FA FA::getFlow() {
-    FA result;
+    FA result(z3_ctx, z3_buffer);
 
     // accept_states size > 1
     if (m_accept_states.size() > 1) {

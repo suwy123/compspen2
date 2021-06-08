@@ -2,13 +2,12 @@
 #include "component/Predicate_SLAH.h"
 #include "exception/SemanticException.h"
 #include "exception/SyntaxException.h"
-#include "solver_slid_int/expr_tool.h"
 //#include "time_tool.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
-PASolver::PASolver() 
-: m_problem(nullptr), z3_sol(z3_ctx), k_index(0), z_newvar_index(0), w_newvar_index(0), ex_newvar_index(0){}
+PASolver::PASolver(z3::context& ctx) 
+: m_problem(nullptr), z3_sol(ctx), k_index(0), z_newvar_index(0), w_newvar_index(0), ex_newvar_index(0),rel(ctx), z3_ctx(ctx){}
 
 void PASolver::solve() {
 	check_preds();
@@ -208,11 +207,6 @@ z3::model PASolver::get_model(){
 	return m;
 }
 
-z3::model PASolver::get_model(){
-	z3::model m(z3_ctx);
-	return m;
-}
-
 /**
  * check entl, negf |= posf
  * @return z3::check_result
@@ -227,8 +221,6 @@ z3::check_result PASolver::check_entl() {//suppose no emp
     z3::expr_vector formula_setB(z3_ctx);
 	formula_setB.push_back(psi);
 	z3::expr_vector disjunct_setB = get_disjunctive_normal_form(formula_setB);
-
-//std::cout<<disjunct_setB<<std::endl;
 	
 	if(disjunct_setB.size()>1){
 		std::cout<<std::endl;
@@ -266,13 +258,14 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 		    z3::expr dataB(z3_ctx);
 		    get_data_space(formulaB, dataB, spaceB);
 		    remove_emp(spaceB);
+		    
 //if(disjunct_setA.size()>1 || disjunct_setB.size()>1){
 //std::cout<<"++++++++++++++++++++++++++++++++phi_"<<j<<" |= psi_"<<k<<"+++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
 //std::cout<<dataA<<" : "<<spaceA<<std::endl;
 //std::cout<<" |= "<<std::endl;
 //std::cout<<dataB<<" : "<<spaceB<<std::endl;
 //}
-		    
+
 		    z3::expr absA = get_abstraction(dataA, spaceA);
 		    z3_sol.reset();
 		    z3_sol.add(absA);
@@ -403,7 +396,7 @@ z3::expr_vector PASolver::get_conjunct(z3::expr formula){
 }
 
 void PASolver::get_data_space(z3::expr &formula, z3::expr &data, z3::expr &space) {
-	//formula在assertparser时处理过，若只有一个原子atom会改写成(and atom)  ，//disjunct中可能是原子或空间公式 
+	//formula在assertparser时处理过，若只有一个原子atom会改写成(and atom) ，//disjunct中可能是原子或空间公式  
 	if(Z3_ast(formula)==nullptr) return;
 	expr_vector data_items(z3_ctx);
     data_items.push_back(z3_ctx.int_const("nil") == 0); // nil == 0
@@ -464,10 +457,10 @@ z3::expr PASolver::tail(z3::expr atom){
 //	if(atom.to_string() == "emp"){
 //		return dest;
 //	}else 
-	if(expr_tool::is_fun(atom, "pto")){
+	if(is_fun(atom, "pto")){
 		dest = atom.arg(0);
 		return dest+1;
-	}else if(expr_tool::is_fun(atom, "blk")){
+	}else if(is_fun(atom, "blk")){
 		dest = atom.arg(1);
 		return dest;
 	}else{//hck or P
@@ -591,6 +584,13 @@ z3::expr PASolver::newblk(z3::expr source, z3::expr dest){
 	return blk_f(source,dest);
 }
 
+z3::expr PASolver::newpto(z3::expr source, z3::expr dest){
+	z3::sort boolSort = z3_ctx.bool_sort();
+	z3::func_decl data_t = z3_ctx.function("data_t", z3_ctx.int_sort(), boolSort);
+	z3::func_decl pto_f = z3_ctx.function("pto", z3_ctx.int_sort(), boolSort, boolSort);
+	return pto_f(source,data_t(dest));
+}
+
 /**
  * get abstraction of formula
  * @param formula :
@@ -631,6 +631,11 @@ z3::expr PASolver::abs_space(z3::expr &space) {
     }
 
     return f_abs;
+}
+
+bool PASolver::is_fun(z3::expr expr, std::string fname) {
+        if (expr.is_app() && expr.decl().name().str() == fname) return true;
+        return false;
 }
 
 bool PASolver::ishck(z3::expr atom){			
@@ -685,9 +690,9 @@ z3::expr PASolver::pred2abs(z3::expr &atom) {//solver中定义的纯虚函数
 	z3::expr dest = tail(atom);
 	
     z3::expr abs(z3_ctx);
-    if (expr_tool::is_fun(atom, "pto")) {
+    if (is_fun(atom, "pto")) {
         abs = source > 0;
-    }else if(expr_tool::is_fun(atom, "blk")){
+    }else if(is_fun(atom, "blk")){
     	abs = (source > 0) && (source < dest);
 	}else{
 		if(ishck(atom)){
@@ -1277,7 +1282,7 @@ bool PASolver::match_P(z3::expr absC, z3::expr spaceC, z3::expr dataD, z3::expr 
 //std::cout<<"part2spaceA: "<<new_sep(sub2_atomsetA)<<std::endl;
 //std::cout<<"part2dataB: "<<sub2_dataB<<std::endl;
 //std::cout<<"part2atomB: "<<sub2_atomB<<std::endl;
-//std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part2-----"<<std::endl;
+std::cout<<"----match_P c1 to spaceC.arg"<<set1[i]<<" part2-----"<<std::endl;
 									if(!match_P(sub2_dataA,new_sep(sub2_atomsetA),sub2_dataB,sub2_atomB,ex_var_set)) return false;
 								}
 							}else{//P(x,\vec{z};y,\vec{u};\vec{v}) hck(x,\vec{z},w,y,\vec{u},\vec{v}) or hck(x,\vec{z};y,\vec{u};\vec{v})
@@ -1641,9 +1646,9 @@ void PASolver::pre_P(z3::expr spaceA, z3::expr dataA, z3::expr spaceB, z3::expr 
 }
 
 z3::check_result PASolver::check_entl_get_relations(z3::expr dataA, z3::expr spaceA, z3::expr dataB, z3::expr spaceB, z3::expr_vector &ex_var_set, z3::expr_vector &pi_ex_set){
-std::cout<<"---------check_entl_get_relations------------------------"<<std::endl;
-std::cout<<"spaceA:"<<spaceA<<std::endl;
-std::cout<<"spaceB:"<<spaceB<<std::endl;
+//std::cout<<"---------check_entl_get_relations------------------------"<<std::endl;
+//std::cout<<"spaceA:"<<spaceA<<std::endl;
+//std::cout<<"spaceB:"<<spaceB<<std::endl;
 //clock_t start, end;
 //start = clock();
     z3::expr absA = get_abstraction(dataA, spaceA);
@@ -1697,7 +1702,8 @@ std::cout<<"spaceB:"<<spaceB<<std::endl;
 	}
 
 	//rel_sub：子蕴涵问题中需要排序的地址已知的关系 
-	Relation rel_sub;rel_sub.init(adds_rep); 
+	Relation rel_sub(z3_ctx);
+	rel_sub.init(adds_rep); 
 	for(int i = 0; i < adds_rep.size(); i++){
 		for(int j = 0; j < adds_rep.size(); j++){
 			if(rel.get_relation(adds_rep[i],adds_rep[j]) == 2){//<
@@ -1855,13 +1861,13 @@ z3::check_result PASolver::check_entl_get_sorts(z3::expr_vector &adds_rep, Relat
 									}
 									sort.push_back(eq_class);
 								}	
-for(int j=0;j<sort.size();j++){
-std::cout<<sort[j];
-}
-std::cout<<std::endl;
+//for(int j=0;j<sort.size();j++){
+//std::cout<<sort[j];
+//}
+//std::cout<<std::endl;
 //system("read REPLY");
 								if(!check_sort(sort, headsA, tailsA, tailsB)){
-									std::cout<<"apply the sort, the entl is false"<<std::endl;
+									//std::cout<<"apply the sort, the entl is false"<<std::endl;
 									return z3::sat;
 								} 
 								//check_sorted_entl 
@@ -1873,7 +1879,7 @@ std::cout<<std::endl;
 								z3::expr_vector tmp_ex_var_set=ex_var_set;
 								z3::expr_vector tmp_pi_ex_set=pi_ex_set;
 								if(!check_sorted_entl(sort,dataA_sorted,spaceA_sorted,dataB,spaceB_sorted,tmp_ex_var_set,tmp_pi_ex_set)){
-									std::cout<<"apply the sort, the entl is false"<<std::endl;
+									//std::cout<<"apply the sort, the entl is false"<<std::endl;
 									return z3::sat;
 								}			
 							}else{//sort is incomplete，为了防止{x1,t1} and {t1,x1}这种重复，加入到前面比较好 
@@ -1915,13 +1921,13 @@ std::cout<<std::endl;
 								sort.push_back(eq_class);
 							}
 
-for(int j=0;j<sort.size();j++){
-std::cout<<sort[j];
-}
-std::cout<<std::endl;
+//for(int j=0;j<sort.size();j++){
+//std::cout<<sort[j];
+//}
+//std::cout<<std::endl;
 //system("read REPLY");
 							if(!check_sort(sort, headsA, tailsA, tailsB)){
-								std::cout<<"apply the sort, the entl is false"<<std::endl;
+								//std::cout<<"apply the sort, the entl is false"<<std::endl;
 								return z3::sat;
 							}
 							//check_sorted_entl 
@@ -1933,7 +1939,7 @@ std::cout<<std::endl;
 							z3::expr_vector tmp_ex_var_set=ex_var_set;
 							z3::expr_vector tmp_pi_ex_set=pi_ex_set;
 							if(!check_sorted_entl(sort,dataA_sorted,spaceA_sorted,dataB,spaceB_sorted,tmp_ex_var_set,tmp_pi_ex_set)){
-								std::cout<<"apply the sort, the entl is false"<<std::endl;
+								//std::cout<<"apply the sort, the entl is false"<<std::endl;
 								return z3::sat;
 							}		
 						}else{

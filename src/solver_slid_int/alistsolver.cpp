@@ -1,5 +1,5 @@
 #include "solver_slid_int/alistsolver.h"
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 bool alistsolver::match_graph(listgraph& g_psi, listgraph& omega_g_i) {
      // TODO (jackchong#1#06/18/18): compute allocated-table ...

@@ -28,7 +28,9 @@ using ConstructorDecList = vector<ConstructorDec>;
 class CommandParser
 {
 public:
-    CommandParser():m_paren_counter(0) {}
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer;
+    CommandParser(z3::context& ctx, Z3Buffer& buffer):m_paren_counter(0), z3_ctx(ctx), z3_buffer(buffer) {}
     virtual ~CommandParser() {}
     virtual void parse(Parser& parser) {}
 

@@ -9,11 +9,10 @@
 *******************************************/
 
 #include "component/FuncType.h"
-#include "component/Z3Buffer.h"
 #include "exception/SemanticException.h"
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 z3::func_decl FuncType::determine(ArgTypeList& arg_type_list){
     // Todo

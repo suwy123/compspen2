@@ -1,3 +1,4 @@
+#include "z3++.h"
 #include "Parser.h"
 
 #include <fstream>
@@ -19,8 +20,10 @@ void testParser(string& file_name) {
 
     TokenScanner::initNormalizedTable();
     TokenScannerFactory factory;
-
-    Parser parser(fin, factory);
+	
+	z3::context z3_ctx;
+	Z3Buffer z3_buffer(z3_ctx);
+    Parser parser(fin, factory, z3_ctx, z3_buffer);
     try {
         parser.parse();
     } catch(std::exception& e) {

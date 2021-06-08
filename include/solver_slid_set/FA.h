@@ -48,7 +48,9 @@ public:
     std::vector<std::string> m_alphabet;
     std::map<std::string, int> m_var_to_pos;
 public:
-    FA(){}
+	z3::context& z3_ctx; 
+	Z3Buffer& z3_buffer;
+    FA(z3::context& ctx, Z3Buffer& buffer): z3_ctx(ctx), z3_buffer(buffer){}
     FA(const FA& other);
     FA& operator=(const FA& other);
     void init();

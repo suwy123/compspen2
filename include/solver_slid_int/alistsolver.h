@@ -9,7 +9,7 @@ protected:
     z3::expr pred_unfold_ge1(z3::expr& atom, int i, z3::expr_vector& new_bools);
 
 public:
-    alistsolver(Problem* problem) : listsolver(problem) {}
+    alistsolver(z3::context& ctx, Problem* problem) : listsolver(ctx, problem) {}
 
 };
 

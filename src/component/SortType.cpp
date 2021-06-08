@@ -10,7 +10,7 @@
 
 #include "component/SortType.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 SortType::operator z3::sort() {
     if (m_sort_name == "Bool") {

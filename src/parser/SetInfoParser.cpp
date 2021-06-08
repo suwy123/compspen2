@@ -13,7 +13,7 @@
 #include <iostream>
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer;
+//extern Z3Buffer z3_buffer;
 
 using std::cout;
 using std::endl;
@@ -36,5 +36,5 @@ void SetInfoParser::parse(Parser& parser) {
 
     //curr = parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]); 
 
-cout<<"set-info done"<<endl;
+//cout<<"set-info done"<<endl;
 }

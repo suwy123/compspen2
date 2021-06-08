@@ -24,9 +24,9 @@ class slah_api{
 
 private:
 
-	static HeapChunk* setHck();
+	static HeapChunk* setHck(z3::context& z3_ctx);
 
-	static Predicate* setHls();
+	static Predicate* setHls(z3::context& z3_ctx);
 
 	static bool is_fun(z3::expr expr, std::string fname);
 
@@ -40,7 +40,7 @@ public:
 
 	static z3::expr newPto(z3::expr x, z3::expr y);//x |-> y
 
-	static z3::expr newEmp();//emp
+	static z3::expr newEmp(z3::context& z3_ctx);//emp
 
 	static z3::expr newHck(z3::expr x, z3::expr y, z3::expr v);
 

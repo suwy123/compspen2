@@ -6,6 +6,8 @@
 #include "solver_slid_int/listgraph.h"
 #include "solver_slid_int/expr_tool.h"
 
+using namespace std;
+
 class listsolver{
 
 protected:
@@ -67,7 +69,8 @@ protected:
 
 
 public:
-listsolver(Problem* problem);
+z3::context& z3_ctx;
+listsolver(z3::context& ctx, Problem* problem);
 //        void check_preds();
         void solve();
         z3::check_result check_sat();

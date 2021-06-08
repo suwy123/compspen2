@@ -2,7 +2,7 @@
 
 
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 
 
@@ -11,7 +11,6 @@ bool slah_api::is_fun(z3::expr expr, std::string fname) {
         if (expr.is_app() && expr.decl().name().str() == fname) return true;
 
         return false;
-
 }
 
 
@@ -23,6 +22,8 @@ z3::expr slah_api::sep(z3::expr spatialFormula1, z3::expr spatialFormula2){
 	if(Z3_ast(spatialFormula1)==nullptr) return spatialFormula2;
 
 	if(Z3_ast(spatialFormula2)==nullptr) return spatialFormula1;
+	
+	z3::context& z3_ctx = spatialFormula1.ctx();
 
 	z3::expr_vector spatialAtomSet(z3_ctx);
 
@@ -75,6 +76,8 @@ z3::expr slah_api::sep(z3::expr spatialFormula1, z3::expr spatialFormula2){
 
 
 z3::expr slah_api::newSep(z3::expr_vector spatialAtomSet){
+	
+	z3::context& z3_ctx = spatialAtomSet.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
 
@@ -97,6 +100,7 @@ z3::expr slah_api::newSep(z3::expr_vector spatialAtomSet){
 
 
 z3::expr slah_api::newBlk(z3::expr x, z3::expr y){
+	z3::context& z3_ctx = x.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
 
@@ -117,6 +121,8 @@ z3::expr slah_api::newBlk(z3::expr x, z3::expr y){
 
 
 z3::expr slah_api::newPto(z3::expr x, z3::expr y){
+	
+	z3::context& z3_ctx = x.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
 
@@ -138,7 +144,7 @@ z3::expr slah_api::newPto(z3::expr x, z3::expr y){
 
 
 
-z3::expr slah_api::newEmp(){
+z3::expr slah_api::newEmp(z3::context& z3_ctx){
 
 	z3::expr emp = z3_ctx.constant("emp", z3_ctx.bool_sort());
 
@@ -153,32 +159,34 @@ z3::expr slah_api::newEmp(){
 
 
 z3::check_result slah_api::checkSat(z3::expr phi){
+	
+	if(Z3_ast(phi) == nullptr) return z3::sat;
+	
+	z3::context& z3_ctx = phi.ctx();
 
-	if(Z3_ast(phi) == nullptr||phi.decl().name().str() != "and"){
+	if(phi.decl().name().str() != "and"){
 
-	    	expr_vector items(z3_ctx);
+    	expr_vector items(z3_ctx);
 
-	    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
+    	if(Z3_ast(phi) != nullptr) items.push_back(phi);
 
-	    	phi = z3::mk_and(items);
+    	phi = z3::mk_and(items);
 
 	}
 
-	Problem m_problem;
-
-	
+	Problem m_problem(z3_ctx);
 
 	m_problem.setLogic("QF_SLAH");
 
 	
 
-	HeapChunk* hck = setHck();
+	HeapChunk* hck = setHck(z3_ctx);
 
 	m_problem.setHeapChunk(hck);
 
 	
 
-	Predicate* hls = setHls();
+	Predicate* hls = setHls(z3_ctx);
 
 	m_problem.setPredicate(hls);
 
@@ -186,9 +194,8 @@ z3::check_result slah_api::checkSat(z3::expr phi){
 
 	m_problem.setPhi(phi);
 
-	
 
-	PASolver sol;
+	PASolver sol(z3_ctx);
 
     sol.setProblem(&m_problem);
 
@@ -199,6 +206,8 @@ z3::check_result slah_api::checkSat(z3::expr phi){
 
 
 z3::check_result slah_api::checkEnt(z3::expr phi, z3::expr psi){
+	
+	z3::context& z3_ctx = phi.ctx();
 
 	if(Z3_ast(phi) == nullptr||phi.decl().name().str() != "and"){
 
@@ -222,21 +231,19 @@ z3::check_result slah_api::checkEnt(z3::expr phi, z3::expr psi){
 
 
 
-	Problem m_problem;
-
-	
+	Problem m_problem(z3_ctx);
 
 	m_problem.setLogic("QF_SLAH");
 
 	
 
-	HeapChunk* hck = setHck();
+	HeapChunk* hck = setHck(z3_ctx);
 
 	m_problem.setHeapChunk(hck);
 
 	
 
-	Predicate* hls = setHls();
+	Predicate* hls = setHls(z3_ctx);
 
 	m_problem.setPredicate(hls);
 
@@ -248,7 +255,7 @@ z3::check_result slah_api::checkEnt(z3::expr phi, z3::expr psi){
 
 	
 
-	PASolver sol;
+	PASolver sol(z3_ctx);
 
     sol.setProblem(&m_problem);
 
@@ -259,6 +266,8 @@ z3::check_result slah_api::checkEnt(z3::expr phi, z3::expr psi){
 
 
 z3::expr slah_api::newHck(z3::expr x, z3::expr y, z3::expr v){
+	
+	z3::context& z3_ctx = x.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
 
@@ -280,7 +289,7 @@ z3::expr slah_api::newHck(z3::expr x, z3::expr y, z3::expr v){
 
 
 
-HeapChunk* slah_api::setHck(){
+HeapChunk* slah_api::setHck(z3::context& z3_ctx){
 
 	string fname = "hck";
 
@@ -338,7 +347,7 @@ HeapChunk* slah_api::setHck(){
 
 	}
 
-	HeapChunk* hck = new HeapChunk(hckfun, pars, exp, ex_size);
+	HeapChunk* hck = new HeapChunk(z3_ctx, hckfun, pars, exp, ex_size);
 
 	return hck;
 
@@ -347,6 +356,8 @@ HeapChunk* slah_api::setHck(){
 
 
 z3::expr slah_api::newHls(z3::expr x, z3::expr y, z3::expr v){
+	
+	z3::context& z3_ctx = x.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
 
@@ -368,7 +379,7 @@ z3::expr slah_api::newHls(z3::expr x, z3::expr y, z3::expr v){
 
 
 
-Predicate* slah_api::setHls(){
+Predicate* slah_api::setHls(z3::context& z3_ctx){
 
 	string fname = "hls";
 
@@ -418,9 +429,7 @@ Predicate* slah_api::setHls(){
 
 	z3::expr rec = z3::exists(w, body);
 
-
-
-	Predicate* hls_p = new Predicate_SLAH(hlsfun, pars, base, rec);
+	Predicate* hls_p = new Predicate_SLAH(z3_ctx, hlsfun, pars, base, rec);
 
 	return hls_p;
 

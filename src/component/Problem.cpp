@@ -9,14 +9,12 @@
 *******************************************/
 
 #include "component/Problem.h"
-#include "component/Z3Buffer.h"
 #include "Types.h"
 
-z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//z3::context z3_ctx;
 
-Problem::Problem():
-    m_phi(z3_ctx), m_psi(z3_ctx), m_pred(nullptr), m_hck(nullptr) {}
+Problem::Problem(z3::context& ctx):
+    z3_ctx(ctx), m_phi(ctx), m_psi(ctx), m_pred(nullptr), m_hck(nullptr) {}
 
 Problem::~Problem() {
     if (m_pred != nullptr) {

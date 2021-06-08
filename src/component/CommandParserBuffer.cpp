@@ -10,18 +10,18 @@
 
 #include "component/CommandParserBuffer.h"
 
-CommandParserBuffer::CommandParserBuffer() {
-    m_buffer["SetLogicParser"] = new SetLogicParser();
-    m_buffer["SetInfoParser"] = new SetInfoParser();
-    m_buffer["CommandParser"] = new CommandParser(); 
-    m_buffer["DeclSortParser"] = new DeclSortParser(); 
-    m_buffer["DeclDatatypesParser"] = new DeclDatatypesParser();
-    m_buffer["DeclHeapParser"] = new DeclHeapParser(); 
-    m_buffer["DefineFunctionParser"] = new DefineFunctionParser(); 
-    m_buffer["DefineFunctionRecParser"] = new DefineFunctionRecParser(); 
-    m_buffer["DeclConstParser"] = new DeclConstParser(); 
-    m_buffer["AssertParser"] = new AssertParser(); 
-    m_buffer["CheckSatParser"] = new CheckSatParser(); 
+CommandParserBuffer::CommandParserBuffer(z3::context& z3_ctx, Z3Buffer& z3_buffer) {
+    m_buffer["SetLogicParser"] = new SetLogicParser(z3_ctx, z3_buffer);
+    m_buffer["SetInfoParser"] = new SetInfoParser(z3_ctx, z3_buffer);
+    m_buffer["CommandParser"] = new CommandParser(z3_ctx, z3_buffer); 
+    m_buffer["DeclSortParser"] = new DeclSortParser(z3_ctx, z3_buffer); 
+    m_buffer["DeclDatatypesParser"] = new DeclDatatypesParser(z3_ctx, z3_buffer);
+    m_buffer["DeclHeapParser"] = new DeclHeapParser(z3_ctx, z3_buffer); 
+    m_buffer["DefineFunctionParser"] = new DefineFunctionParser(z3_ctx, z3_buffer); 
+    m_buffer["DefineFunctionRecParser"] = new DefineFunctionRecParser(z3_ctx, z3_buffer); 
+    m_buffer["DeclConstParser"] = new DeclConstParser(z3_ctx, z3_buffer); 
+    m_buffer["AssertParser"] = new AssertParser(z3_ctx, z3_buffer); 
+    m_buffer["CheckSatParser"] = new CheckSatParser(z3_ctx, z3_buffer); 
 
 }
 

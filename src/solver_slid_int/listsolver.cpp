@@ -1,6 +1,6 @@
 #include "solver_slid_int/listsolver.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 /**
  *###################### listsolver ####################################
@@ -19,11 +19,11 @@ extern z3::context z3_ctx;
 //        }
 //}
 
-listsolver::listsolver(Problem* problem) : 
-	m_problem(problem),delta_ge1_predicate(z3_ctx),
-	m_phi_abs(z3_ctx),m_phi_space(z3_ctx),
-	m_psi_abs(z3_ctx),m_psi_space(z3_ctx),
-	m_omega_eq_size(0) {}
+listsolver::listsolver(z3::context& ctx, Problem* problem) :
+	m_problem(problem),delta_ge1_predicate(ctx),
+	m_phi_abs(ctx),m_phi_space(ctx),
+	m_psi_abs(ctx),m_psi_space(ctx),
+	m_omega_eq_size(0), z3_ctx(ctx) {}
 
 void listsolver::solve() {
     string result = "";

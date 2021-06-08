@@ -28,7 +28,7 @@ private:
     z3::expr m_pto;
     z3::expr m_rec_app;
 public:
-		Predicate_SLID_INT(z3::func_decl fun, z3::expr_vector pars, z3::expr base, z3::expr rec);
+		Predicate_SLID_INT(z3::context& ctx, z3::func_decl fun, z3::expr_vector pars, z3::expr base, z3::expr rec);
 		virtual ~Predicate_SLID_INT();
 		
 		void check_rec_rule(z3::expr &rec_rule);

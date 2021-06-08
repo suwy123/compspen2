@@ -23,5 +23,5 @@ void DeclHeapParser::parse(Parser& parser) {
 
     parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
     parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
-cout<<"declare-heap done"<<endl;
+//cout<<"declare-heap done"<<endl;
 }

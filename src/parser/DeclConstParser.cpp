@@ -23,7 +23,7 @@ void DeclConstParser::parse(Parser& parser) {
      
     SortType* sort = parser.getSort(vsort);
 
-    Var* pv = new Var(vname, sort);
+    Var* pv = new Var(z3_ctx, z3_buffer, vname, sort);
     parser.addVar(pv);
-cout<<"declare-const done"<<endl;
+//cout<<"declare-const done"<<endl;
 }

@@ -23,7 +23,8 @@ private:
 	int ex_newvar_index;//change_hck of B
 	Relation rel;
 public:
-	PASolver();
+	z3::context& z3_ctx;
+	PASolver(z3::context& ctx);
 	~PASolver(){}
 	void setProblem(Problem* problem){m_problem = problem;}
     void solve();

@@ -2,11 +2,11 @@
 #include "exception/SemanticException.h"
 
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
-HeapChunk::HeapChunk(z3::func_decl fun, z3::expr_vector pars, z3::expr exp, int ex_size)
-: m_fun(fun), m_pars(pars), m_data(z3_ctx), m_space(z3_ctx), 
-  m_ex_size(ex_size),type(0),v_index(-1),min_bound(1),max_bound(2147483647){
+HeapChunk::HeapChunk(z3::context& ctx, z3::func_decl fun, z3::expr_vector pars, z3::expr exp, int ex_size)
+: m_fun(fun), m_pars(pars), m_data(ctx), m_space(ctx), 
+  m_ex_size(ex_size),type(0),v_index(-1),min_bound(1),max_bound(2147483647), z3_ctx(ctx){
 		if (!exp.is_app() || exp.decl().name().str() != "and") {
 		    throw SemanticException("'and' is excepted in the definition of hck");
 		}

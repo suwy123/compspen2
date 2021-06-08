@@ -4,6 +4,7 @@
 #include "FA.h"
 #include "z3++.h"
 #include "Types.h"
+#include "component/Z3Buffer.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -20,7 +21,10 @@ private:
     std::set<z3::expr, exprcomp> m_tpaq_set;
     std::vector<int> m_factors;
 public:
-    SatRqspa(std::string file_name, z3::expr phi_count) :m_phi_count(phi_count), m_file_name(file_name){}
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer; 
+    SatRqspa(z3::context& ctx, Z3Buffer& buffer, std::string file_name, z3::expr phi_count) 
+	: z3_ctx(ctx), z3_buffer(buffer), m_phi_count(phi_count), m_file_name(file_name), m_result(ctx,buffer){}
     void getContent(std::string& str);
     void getTransition(std::string& str, transition& tr);
     void readFile(FA& fa, std::string file_name, std::string prefix);

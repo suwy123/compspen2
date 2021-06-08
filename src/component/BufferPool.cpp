@@ -17,11 +17,11 @@
 #include "Types.h"
 
 TokenScannerFactory tokenScannerFactory;
-CommandParserFactory cmdParserFactory;
+//CommandParserFactory cmdParserFactory;
 TokenBuffer token_buffer;
 TokenScannerBuffer token_scanner_buffer;
-CommandParserBuffer cmd_parser_buffer;
-Z3Buffer z3_buffer;
+//CommandParserBuffer cmd_parser_buffer;
+//Z3Buffer z3_buffer;
 
 // error info
 SyntaxErrorTable SYNTAX_ERROR_INFO = {

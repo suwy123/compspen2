@@ -21,7 +21,7 @@
 class AssertParser: public CommandParser
 {
 public:
-    AssertParser() {}
+    AssertParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) {}
     virtual ~AssertParser() {}
     virtual void parse(Parser& parser);
 

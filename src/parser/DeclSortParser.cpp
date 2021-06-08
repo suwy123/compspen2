@@ -10,10 +10,10 @@
 
 #include "parser/DeclSortParser.h"
 #include "component/SortType.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer;
+//extern Z3Buffer z3_buffer;
 
 /*! @brief Brief function description here
  *
@@ -33,22 +33,22 @@ void DeclSortParser::parse(Parser& parser) {
 
     curr = parser.checkNext(RIGHT_PAREN, SYNTAX_ERROR_INFO[RIGHT_PAREN]);
 
-    SortType* p_sort = new SortType(sort, snum);
+    SortType* p_sort = new SortType(z3_ctx, sort, snum);
     parser.addSort(sort, p_sort, row, col);
     z3_buffer.getSort(p_sort);
 
 	string nil = "nil";
 	if(parser.getVar(nil) == nullptr){
-		Var* pv = new Var(nil, p_sort);
+		Var* pv = new Var(z3_ctx, z3_buffer, nil, p_sort);
     	parser.addVar(pv);	
 	}
 	string setint = "SetInt";
 	string emptyset = "emptyset";
     if(parser.getSort(setint) != nullptr && parser.getVar(emptyset) == nullptr){
     	SortType* ps = parser.getSort(setint);
-    	Var* pv = new Var(emptyset, ps);
+    	Var* pv = new Var(z3_ctx, z3_buffer, emptyset, ps);
     	parser.addVar(pv);	
 	}
-cout<<"declare-sort done"<<endl;
+//cout<<"declare-sort done"<<endl;
 }
 

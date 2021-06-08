@@ -15,7 +15,7 @@
 class DeclConstParser: public CommandParser
 {
 public:
-    DeclConstParser(/* args */) { }
+    DeclConstParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) { }
     virtual ~DeclConstParser() { }
     virtual void parse(Parser& parser);
 };

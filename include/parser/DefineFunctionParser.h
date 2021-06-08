@@ -20,7 +20,7 @@
 class DefineFunctionParser: public CommandParser
 {
 public:
-    DefineFunctionParser() {}
+    DefineFunctionParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) {}
     virtual ~DefineFunctionParser() {}
     virtual void parse(Parser& parser);
 

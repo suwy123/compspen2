@@ -13,7 +13,7 @@
 
 class CheckSatParser : public CommandParser {
 public:
-    CheckSatParser() {}
+    CheckSatParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) {}
     virtual ~CheckSatParser() {}
 
     virtual void parse(Parser& parser);

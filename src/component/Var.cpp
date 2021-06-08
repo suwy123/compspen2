@@ -9,12 +9,12 @@
 *******************************************/
 
 #include "component/Var.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 Var::operator z3::expr() {
-    sort& s = z3_buffer.getSort(m_sort_type);
+    z3::sort& s = z3_buffer.getSort(m_sort_type);
     return z3_ctx.constant(m_var_name.c_str(), s); 
 }

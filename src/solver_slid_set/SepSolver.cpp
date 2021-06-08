@@ -9,16 +9,17 @@
 *******************************************/
 
 #include "solver_slid_set/SepSolver.h"
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 #include "solver_slid_set/MonaExecutor.h"
 #include "solver_slid_set/MonaTranslator.h"
 #include "solver_slid_set/SatRqspa.h"
 #include "Types.h"
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
-SepSolver::SepSolver(): m_problem(nullptr),m_abs_phi(z3_ctx), m_phi_free_items(z3_ctx), m_abs_psi(z3_ctx), m_psi_free_items(z3_ctx), 
+SepSolver::SepSolver(z3::context& ctx, Z3Buffer& buffer)
+: z3_ctx(ctx), z3_buffer(buffer), m_problem(nullptr),m_abs_phi(z3_ctx), m_phi_free_items(z3_ctx), m_abs_psi(z3_ctx), m_psi_free_items(z3_ctx), 
     m_new_vars(z3_ctx), m_counter(0) { }
 
 SepSolver::~SepSolver() {
@@ -60,7 +61,7 @@ string SepSolver::check(expr& abs, expr_vector& free_items) {
     if (free_items.size() == 0) {
         // simple case
 //cout << "simple case: \n";
-        MonaTranslator mona_tl(abs);
+        MonaTranslator mona_tl(z3_ctx, z3_buffer, abs);
         mona_tl.writeToFile("test.mona");
         std::map<std::string, std::string> model;
         MonaExecutor mona_exe;
@@ -119,7 +120,7 @@ string SepSolver::check(expr& abs, expr_vector& free_items) {
 
             expr phi_count = mk_and(phi_count_items);
 
-            MonaTranslator mona_tl(phi_core);
+            MonaTranslator mona_tl(z3_ctx, z3_buffer, phi_core);
             mona_tl.writeToFile("phi_core.mona");
             map<string, string> model;
             MonaExecutor mona_exe;
@@ -133,7 +134,7 @@ string SepSolver::check(expr& abs, expr_vector& free_items) {
                 mona_exe.setName("phi_core.mona");
                 mona_exe.execute("phi_core.dfa");
                 // construct PA
-                SatRqspa rqspa("phi_core.dfa", phi_count);
+                SatRqspa rqspa(z3_ctx, z3_buffer, "phi_core.dfa", phi_count);
                 z3::check_result sat_res = rqspa.checkSat(vars, model);
                 if (sat_res == z3::sat) {
                     return "SAT";

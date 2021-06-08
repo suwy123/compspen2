@@ -1,9 +1,9 @@
 #include "solver_slid_set/SatRqspa.h"
 
-#include "component/Z3Buffer.h"
 
-extern z3::context z3_ctx;
-extern Z3Buffer z3_buffer;
+
+//extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer;
 
 /**
  * get line content :
@@ -238,7 +238,7 @@ void SatRqspa::getVars() {
 
 FA SatRqspa::generatePA() {
 
-    FA phi_core;
+    FA phi_core(z3_ctx, z3_buffer);
     readFile(phi_core, m_file_name, "q_");
 
     std::cout << "accept: " << phi_core.getAcceptStates().size() << ", states: " << phi_core.getStateNum() << std::endl;
@@ -258,7 +258,7 @@ FA SatRqspa::generatePA() {
     // generate nfa for var in phi_count
     std::vector<FA> nfas;
     for (int i=0; i<m_vars.size(); i++) {
-        FA t_fa;
+        FA t_fa(z3_ctx, z3_buffer);
         t_fa.setAlphabetSet(phi_core.getAlphabet());
         generateNFA(m_vars[i], t_fa);
         nfas.push_back(t_fa);
@@ -277,7 +277,8 @@ FA SatRqspa::generatePA() {
     }
 
     // compute product of all nfa
-    FA fa_result = phi_core;
+    FA fa_result(z3_ctx,z3_buffer);
+	fa_result = phi_core;
     for (int i=0; i<nfas.size(); i++) {
         // std::string fa_name = "fa_result_produce_";
         // fa_name.append(std::to_string(i)).append(".dot");
@@ -286,7 +287,8 @@ FA SatRqspa::generatePA() {
     }
     m_result = fa_result;
     fa_result.print("fa_result.dot");
-    FA pa = fa_result.stateAsEdge();
+    FA pa(z3_ctx,z3_buffer);
+	pa = fa_result.stateAsEdge();
 
     pa.print("pa_before.dot");
 
@@ -387,7 +389,7 @@ z3::check_result SatRqspa::checkSat(std::vector<z3::expr>& vars, std::map<std::s
     z3::expr phi_count = subPhiCount();
 
     int N = 1;
-    FA sub_pa;
+    FA sub_pa(z3_ctx, z3_buffer);
     for (int i=1; i<=N+1; i++) {
         if (i <= N) {
             sub_pa = pa.getSubgraph(i);

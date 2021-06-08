@@ -20,7 +20,7 @@
 class DefineFunctionRecParser: public CommandParser
 {
 public:
-    DefineFunctionRecParser() {}
+    DefineFunctionRecParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) {}
     virtual ~DefineFunctionRecParser() {}
     virtual void parse(Parser& parser);
     void checkSLAHRecRule(Parser& parser, z3::expr rec, string fname);

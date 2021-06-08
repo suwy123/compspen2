@@ -15,7 +15,7 @@
 class DeclHeapParser: public CommandParser
 {
 public:
-    DeclHeapParser() { }
+    DeclHeapParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) { }
     virtual ~DeclHeapParser() { }
     virtual void parse(Parser& parser);
 };

@@ -11,7 +11,7 @@
 #include "parser/AssertParser.h"
 #include "z3++.h"
 
-extern z3::context z3_ctx;
+//extern z3::context z3_ctx;
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
 
@@ -40,5 +40,5 @@ void AssertParser::parse(Parser& parser) {
 		}
         parser.addPhi(phi);
     }
-cout<<"assert done"<<endl;
+//cout<<"assert done"<<endl;
 }

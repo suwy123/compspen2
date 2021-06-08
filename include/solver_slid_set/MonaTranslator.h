@@ -39,7 +39,9 @@ private:
     std::string getDeclStr(int order, std::set<z3::expr, exprcomp>& var_set);
     std::string getQuantifierBoundStr(bool is_all, z3::expr_vector& bounds);
 public:
-    MonaTranslator(z3::expr formula);
+	z3::context& z3_ctx;
+	Z3Buffer& z3_buffer; 
+    MonaTranslator(z3::context& ctx, Z3Buffer& buffer, z3::expr formula);
     void writeToFile(std::string name);
     std::string getStr(z3::expr item, std::set<std::string>& set_items);
 };

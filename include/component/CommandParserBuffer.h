@@ -37,7 +37,7 @@ class CommandParser;
 class CommandParserBuffer
 {
 public:
-    CommandParserBuffer(); 
+    CommandParserBuffer(z3::context& z3_ctx, Z3Buffer& z3_buffer); 
     virtual ~CommandParserBuffer(); 
 
     CommandParser* getCommandParser();

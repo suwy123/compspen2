@@ -20,7 +20,7 @@
 class SetInfoParser : public CommandParser
 {
 public:
-    SetInfoParser() {}
+    SetInfoParser(z3::context& ctx, Z3Buffer& buffer): CommandParser(ctx, buffer) {}
     virtual ~SetInfoParser() {}
     virtual void parse(Parser& parser);
 };

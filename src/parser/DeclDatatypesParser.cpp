@@ -10,10 +10,10 @@
 
 #include "parser/DeclDatatypesParser.h"
 
-#include "component/Z3Buffer.h"
+//#include "component/Z3Buffer.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer;
+//extern Z3Buffer z3_buffer;
 
 void DeclDatatypesParser::parse(Parser& parser) {
     parser.checkNext(LEFT_PAREN, SYNTAX_ERROR_INFO[LEFT_PAREN]);
@@ -36,11 +36,11 @@ void DeclDatatypesParser::parse(Parser& parser) {
     z3_buffer.getSort(ptr);
     // 2. add func_decl (cd_list.size() == 1)
     ConstructorDec cd = cd_list[0];
-    FuncType* pf = new FuncType(cd.first);
+    FuncType* pf = new FuncType(z3_ctx,z3_buffer,cd.first);
     for (auto item : cd.second) {
         pf->addArg(item.second->getName());
     }
     pf->addArg(ptr->getName());
     parser.addFunc(cd.first, pf);
-cout<<"declare-datatypes done"<<endl;
+//cout<<"declare-datatypes done"<<endl;
 }

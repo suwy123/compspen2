@@ -16,15 +16,15 @@
 #include "component/Predicate_SLAH.h"
 
 extern SyntaxErrorTable SYNTAX_ERROR_INFO;
-extern Z3Buffer z3_buffer; 
-extern z3::context z3_ctx;
+//extern Z3Buffer z3_buffer; 
+//extern z3::context z3_ctx;
 
 void DefineFunctionRecParser::parse(Parser& parser) {
     Token* curr = parser.checkNext(SYMBOL_TOKEN, SYNTAX_ERROR_INFO[SYMBOL_TOKEN]);
     string fname = dynamic_cast<StrToken*>(curr)->value();
     parseParameters(parser);
 
-    FuncType* pf = new FuncType(fname);
+    FuncType* pf = new FuncType(z3_ctx, z3_buffer, fname);
 
     VarList vpars;
     parser.topVar(vpars);
@@ -83,17 +83,17 @@ void DefineFunctionRecParser::parse(Parser& parser) {
     // TODO generate predicate definition
     Predicate* pred;
     if(parser.getProblem()->getLogic() == "QF_SLID_SET"){ 
-    	pred = new Predicate_SLID_SET(pars, base, rec);
+    	pred = new Predicate_SLID_SET(z3_ctx, z3_buffer, pars, base, rec);
 	}else if(parser.getProblem()->getLogic() == "QF_SLID_INT"){
-		pred = new Predicate_SLID_INT(fun, pars, base, rec);
+		pred = new Predicate_SLID_INT(z3_ctx, fun, pars, base, rec);
 	}else if(parser.getProblem()->getLogic() == "QF_SLAH"){
 		checkSLAHRecRule(parser, rec, fname);
-		pred = new Predicate_SLAH(fun, pars, base, rec);
+		pred = new Predicate_SLAH(z3_ctx, fun, pars, base, rec);
 	}else{
-		pred = new Predicate(pars, base, rec);
+		pred = new Predicate(z3_ctx, pars, base, rec);
 	}
     parser.addPredicate(pred);
-cout<<"define-fun-rec done"<<endl;
+//cout<<"define-fun-rec done"<<endl;
 }
 
 void DefineFunctionRecParser::checkSLAHRecRule(Parser& parser, z3::expr rec, string fname){
