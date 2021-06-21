@@ -381,7 +381,8 @@ z3::expr_vector PASolver::get_conjunct(z3::expr formula){
     		for(int j=0;j<sub_conjunct_set.size();j++){
     			conjunct_set.push_back(sub_conjunct_set[j]);
 			}
-		}else if(is_fun(formula.arg(i),"<")||is_fun(formula.arg(i),"<=")||is_fun(formula.arg(i),">")||is_fun(formula.arg(i),">=")
+		}else if(formula.arg(i).to_string()=="true"||formula.arg(i).to_string()=="false"
+		   ||is_fun(formula.arg(i),"<")||is_fun(formula.arg(i),"<=")||is_fun(formula.arg(i),">")||is_fun(formula.arg(i),">=")
 	       ||is_fun(formula.arg(i),"=")||is_fun(formula.arg(i),"distinct")
 		   ||formula.arg(i).to_string()=="emp"||is_fun(formula.arg(i),"pto")||is_fun(formula.arg(i),"blk")
 		   ||is_fun(formula.arg(i),m_problem->getHeapChunk()->get_name())||is_fun(formula.arg(i),pdef->get_name())
