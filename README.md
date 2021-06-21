@@ -15,3 +15,7 @@
 3. $g++ -std=c++11 test.cpp -o test.out -I./include/ -I./include/z3 -lslah -lz3 -L./lib<br>
 4. $export LD_LIBRARY_PATH=./lib<br>
 5. $./test.out<br>
+
+#How to use it
+For satisfiability problem, "The result: sat" means it is satisfiable.<br>
+For entailment problem, "The result: unsat" means it is true.<br>
