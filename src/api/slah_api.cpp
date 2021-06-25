@@ -25,72 +25,40 @@ z3::expr slah_api::sep(z3::expr spatialFormula1, z3::expr spatialFormula2){
 	
 	z3::context& z3_ctx = spatialFormula1.ctx();
 
-	z3::expr_vector spatialAtomSet(z3_ctx);
+	z3::expr_vector spatialFormulaSet(z3_ctx);
 
-	if(is_fun(spatialFormula1, "sep") && is_fun(spatialFormula2, "sep")){
+	spatialFormulaSet.push_back(spatialFormula1);
+	spatialFormulaSet.push_back(spatialFormula2);
 
-	    for (int i=0; i<spatialFormula1.num_args(); i++) {
-
-	    	spatialAtomSet.push_back(spatialFormula1.arg(i));
-
-	    }
-
-	    for (int i=0; i<spatialFormula2.num_args(); i++) {
-
-	    	spatialAtomSet.push_back(spatialFormula2.arg(i));
-
-	    }
-
-	}else if(is_fun(spatialFormula1, "sep")){
-
-	    for (int i=0; i<spatialFormula1.num_args(); i++) {
-
-	    	spatialAtomSet.push_back(spatialFormula1.arg(i));
-
-	    }
-
-	    spatialAtomSet.push_back(spatialFormula2);
-
-	}else if(is_fun(spatialFormula2, "sep")){
-
-	    spatialAtomSet.push_back(spatialFormula1);
-
-	    for (int i=0; i<spatialFormula2.num_args(); i++) {
-
-	    	spatialAtomSet.push_back(spatialFormula2.arg(i));
-
-	    }	
-
-	}else{
-
-	    spatialAtomSet.push_back(spatialFormula1);
-
-	    spatialAtomSet.push_back(spatialFormula2);
-
-	}
-
-	return newSep(spatialAtomSet);
+	return newSep(spatialFormulaSet);
 
 }
 
 
 
-z3::expr slah_api::newSep(z3::expr_vector spatialAtomSet){
+z3::expr slah_api::newSep(z3::expr_vector spatialFormulaSet){
 	
-	z3::context& z3_ctx = spatialAtomSet.ctx();
+	z3::context& z3_ctx = spatialFormulaSet.ctx();
 
 	z3::sort boolSort = z3_ctx.bool_sort();
-
 	z3::sort range_sort = boolSort;
-
     z3::sort_vector args_sort(z3_ctx);
-
-    for (unsigned i=0; i<spatialAtomSet.size(); i++) {
-
+    
+    z3::expr_vector spatialAtomSet(z3_ctx);
+    for(int i=0;i<spatialFormulaSet.size();i++){
+    	z3::expr spatialFormula = spatialFormulaSet[i];
+    	if(is_fun(spatialFormula, "sep")){
+    		for (int j=0; j<spatialFormula.num_args(); j++) {
+	    		spatialAtomSet.push_back(spatialFormula.arg(j));
+	    	}
+		}else{
+			spatialAtomSet.push_back(spatialFormula);
+		}
+	}
+    
+    for (int i=0; i<spatialAtomSet.size(); i++) {
     	args_sort.push_back(boolSort);
-
     }
-
     z3::func_decl sep_f = z3_ctx.function("sep", args_sort, range_sort);
 
     return sep_f(spatialAtomSet);
