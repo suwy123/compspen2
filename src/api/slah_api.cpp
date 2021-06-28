@@ -6,7 +6,9 @@
 
 
 
-bool slah_api::is_fun(z3::expr expr, std::string fname) {
+bool slah_api::isFun(z3::expr expr, std::string fname) {
+	
+		if(fname == "emp" && expr.to_string() == "emp") return true; 
 
         if (expr.is_app() && expr.decl().name().str() == fname) return true;
 
@@ -47,7 +49,7 @@ z3::expr slah_api::newSep(z3::expr_vector spatialFormulaSet){
     z3::expr_vector spatialAtomSet(z3_ctx);
     for(int i=0;i<spatialFormulaSet.size();i++){
     	z3::expr spatialFormula = spatialFormulaSet[i];
-    	if(is_fun(spatialFormula, "sep")){
+    	if(isFun(spatialFormula, "sep")){
     		for (int j=0; j<spatialFormula.num_args(); j++) {
 	    		spatialAtomSet.push_back(spatialFormula.arg(j));
 	    	}
