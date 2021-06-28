@@ -266,6 +266,10 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 //std::cout<<dataB<<" : "<<spaceB<<std::endl;
 //}
 
+			if(spaceANoEmp_spaceBEmp(spaceA,spaceB)==true){
+				continue;
+			}
+
 		    z3::expr absA = get_abstraction(dataA, spaceA);
 		    z3_sol.reset();
 		    z3_sol.add(absA);
@@ -366,6 +370,19 @@ z3::check_result PASolver::check_entl() {//suppose no emp
 		}
 	}
 	return z3::unsat;
+}
+
+bool PASolver::spaceANoEmp_spaceBEmp(z3::expr spaceA, z3::expr spaceB){
+	if(Z3_ast(spaceB)!=nullptr || Z3_ast(spaceA)==nullptr) return false;
+	if(is_fun(spaceA,"pto") || is_fun(spaceA,"blk") || is_fun(spaceA,m_problem->getHeapChunk()->get_name())) return true;
+	if(is_fun(spaceA,"sep")){
+		for(int i=0;i<spaceA.num_args();i++){
+			if(is_fun(spaceA.arg(i),"pto") || is_fun(spaceA.arg(i),"blk") || is_fun(spaceA.arg(i),m_problem->getHeapChunk()->get_name())){
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 z3::expr_vector PASolver::get_conjunct(z3::expr formula){
